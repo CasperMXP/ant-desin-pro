@@ -92,6 +92,9 @@ class BasicLayout extends React.PureComponent {
     dispatch({
       type: 'setting/getSetting',
     });
+    dispatch({
+      type: 'route/fetchRoutes',
+    });
     this.renderRef = requestAnimationFrame(() => {
       this.setState({
         rendering: false,
@@ -128,6 +131,8 @@ class BasicLayout extends React.PureComponent {
     const {
       route: { routes },
     } = this.props;
+    console.log('routes........')
+    console.log(routes)
     return formatter(routes);
   }
 
@@ -275,8 +280,9 @@ class BasicLayout extends React.PureComponent {
   }
 }
 
-export default connect(({ global, setting }) => ({
+export default connect(({ global, setting,route }) => ({
   collapsed: global.collapsed,
   layout: setting.layout,
   ...setting,
+  route,
 }))(BasicLayout);
