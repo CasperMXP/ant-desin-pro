@@ -8,9 +8,13 @@ export function getAuthority() {
     } else {
       authority = [authority];
     }
-  } else {
-    authority = ['admin'];
   }
+  /**
+   * 去掉逻辑，没有获取到时候设置为空
+   */
+  // else {
+  //   authority = ['admin'];
+  // }
   return authority;
 }
 

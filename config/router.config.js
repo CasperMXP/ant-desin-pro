@@ -16,8 +16,8 @@ export default [
     component: '../layouts/BasicLayout',
     Routes: ['src/pages/Authorized'],
     routes: [
-      // dashboard
-      { path: '/', redirect: '/dashboard/analysis' },
+      // 默认访问根路径跳转到登录页面路由
+      { path: '/', redirect: '/user' },
       {
         path: '/dashboard',
         name: 'dashboard',

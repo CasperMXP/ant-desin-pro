@@ -23,8 +23,14 @@ export default {
       if (response.status === 'ok') {
         reloadAuthorized();
         const urlParams = new URL(window.location.href);
+
         const params = getPageQuery();
         let { redirect } = params;
+        /**
+         * Todo
+         * 将首页默认设置登录页面后，此时redirect为undefined,所以登录成功后，直接跳转/dashboard/analysis
+         * yield put(routerRedux.replace(redirect || '/dashboard/analysis'));
+         */
         if (redirect) {
           const redirectUrlParams = new URL(redirect);
           if (redirectUrlParams.origin === urlParams.origin) {
@@ -37,7 +43,7 @@ export default {
             return;
           }
         }
-        yield put(routerRedux.replace(redirect || '/'));
+        yield put(routerRedux.replace(redirect || '/dashboard/analysis'));
       }
     },
 

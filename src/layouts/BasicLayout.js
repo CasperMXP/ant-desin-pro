@@ -1,14 +1,14 @@
 import React from 'react';
-import { Layout } from 'antd';
+import {Layout} from 'antd';
 import DocumentTitle from 'react-document-title';
 import isEqual from 'lodash/isEqual';
 import memoizeOne from 'memoize-one';
-import { connect } from 'dva';
-import { ContainerQuery } from 'react-container-query';
+import {connect} from 'dva';
+import {ContainerQuery} from 'react-container-query';
 import classNames from 'classnames';
 import pathToRegexp from 'path-to-regexp';
-import { enquireScreen, unenquireScreen } from 'enquire-js';
-import { formatMessage } from 'umi/locale';
+import {enquireScreen, unenquireScreen} from 'enquire-js';
+import {formatMessage} from 'umi/locale';
 import SiderMenu from '@/components/SiderMenu';
 import Authorized from '@/utils/Authorized';
 import SettingDrawer from '@/components/SettingDrawer';
@@ -82,6 +82,7 @@ class BasicLayout extends React.PureComponent {
   state = {
     rendering: true,
     isMobile: false,
+    menuData: [],
   };
 
   componentDidMount() {
@@ -93,8 +94,8 @@ class BasicLayout extends React.PureComponent {
       type: 'setting/getSetting',
     });
     dispatch({
-      type: 'route/fetchRoutes',
-    });
+      type: 'menu/getMenus',
+    })
     this.renderRef = requestAnimationFrame(() => {
       this.setState({
         rendering: false,
@@ -127,14 +128,15 @@ class BasicLayout extends React.PureComponent {
     };
   }
 
-  getMenuData() {
-    const {
-      route: { routes },
-    } = this.props;
-    console.log('routes........')
-    console.log(routes)
-    return formatter(routes);
-  }
+  /**
+   * 注释，采取从modal->menu读取显示数据
+   */
+  // getMenuData() {
+  //   const {
+  //     route: { routes },
+  //   } = this.props;
+  //   return formatter(routes);
+  // }
 
   /**
    * 获取面包屑映射
@@ -151,7 +153,8 @@ class BasicLayout extends React.PureComponent {
         routerMap[menuItem.path] = menuItem;
       });
     };
-    mergeMenuAndRouter(this.getMenuData());
+    // mergeMenuAndRouter(this.getMenuData());
+    mergeMenuAndRouter(this.state.menuData);
     return routerMap;
   }
 
@@ -227,9 +230,12 @@ class BasicLayout extends React.PureComponent {
       children,
       location: { pathname },
     } = this.props;
-    const { rendering, isMobile } = this.state;
+    const { rendering, isMobile,menuData } = this.state;
     const isTop = PropsLayout === 'topmenu';
-    const menuData = this.getMenuData();
+    /**
+     * 从state从获取的menuData
+     */
+    // const menuData = this.getMenuData();
     const layout = (
       <Layout>
         {isTop && !isMobile ? null : (
@@ -280,9 +286,9 @@ class BasicLayout extends React.PureComponent {
   }
 }
 
-export default connect(({ global, setting,route }) => ({
+export default connect(({ global, setting ,menu}) => ({
   collapsed: global.collapsed,
   layout: setting.layout,
   ...setting,
-  route,
+  menuData: menu.menuData,
 }))(BasicLayout);

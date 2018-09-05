@@ -1,23 +1,21 @@
-import {query as queryRoutes} from '@/services/route';
+import {query as queryMenus} from '@/services/menu';
 
 /**
  * 参考文档 https://dvajs.com/api/#model
  */
 export default {
-  namespace: 'route',
+  namespace: 'menu',
 
   state: {
-    routes: [],
+    menuData: [],
   },
   /**
    * 处理异步操作和业务逻辑，不直接修改state,由action触发，可以触发action,可以和服务器交互，可以获取全局的state
    * call执行异步函数，put发出一个action,select用于从state里获取数据
    */
   effects: {
-    *fetchRoutes(_, { call, put }) {
-      const response = yield call(queryRoutes);
-      console.log('call route service')
-      console.log(response)
+    *getMenus(_, { call, put }) {
+      const response = yield call(queryMenus);
       yield put({
         type: 'save',
         payload: response,
@@ -30,11 +28,9 @@ export default {
    */
   reducers: {
     save(state, action) {
-      console.log(state)
-      console.log(action)
       return {
         ...state,
-        routes: action.payload,
+        menuData: action.payload,
       };
     },
   },
