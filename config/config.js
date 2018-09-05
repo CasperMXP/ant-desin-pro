@@ -93,4 +93,5 @@ export default {
   cssnano: {
     mergeRules: false,
   },
+  title: 'XTXN PORTAL DEMO',
 };

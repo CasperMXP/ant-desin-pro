@@ -20,32 +20,6 @@ import Context from './MenuContext';
 const { Content } = Layout;
 const { check } = Authorized;
 
-// Conversion router to menu.
-function formatter(data, parentPath = '', parentAuthority, parentName) {
-  return data.map(item => {
-    let locale = 'menu';
-    if (parentName && item.name) {
-      locale = `${parentName}.${item.name}`;
-    } else if (item.name) {
-      locale = `menu.${item.name}`;
-    } else if (parentName) {
-      locale = parentName;
-    }
-    const result = {
-      ...item,
-      locale,
-      authority: item.authority || parentAuthority,
-    };
-    if (item.routes) {
-      const children = formatter(item.routes, `${parentPath}${item.path}/`, item.authority, locale);
-      // Reduce memory usage
-      result.children = children;
-    }
-    delete result.routes;
-    return result;
-  });
-}
-
 const query = {
   'screen-xs': {
     maxWidth: 575,
@@ -128,15 +102,6 @@ class BasicLayout extends React.PureComponent {
     };
   }
 
-  /**
-   * 注释，采取从modal->menu读取显示数据
-   */
-  // getMenuData() {
-  //   const {
-  //     route: { routes },
-  //   } = this.props;
-  //   return formatter(routes);
-  // }
 
   /**
    * 获取面包屑映射
@@ -153,8 +118,8 @@ class BasicLayout extends React.PureComponent {
         routerMap[menuItem.path] = menuItem;
       });
     };
-    // mergeMenuAndRouter(this.getMenuData());
-    mergeMenuAndRouter(this.state.menuData);
+    const { menuData } = this.state;
+    mergeMenuAndRouter(menuData);
     return routerMap;
   }
 
@@ -167,13 +132,13 @@ class BasicLayout extends React.PureComponent {
       }
     });
     if (!currRouterData) {
-      return 'Ant Design Pro';
+      return 'XTXN PORTAL';
     }
     const message = formatMessage({
       id: currRouterData.locale || currRouterData.name,
       defaultMessage: currRouterData.name,
     });
-    return `${message} - Ant Design Pro`;
+    return `${message} - XTXN PORTAL`;
   };
 
   getLayoutStyle = () => {
@@ -232,10 +197,6 @@ class BasicLayout extends React.PureComponent {
     } = this.props;
     const { rendering, isMobile,menuData } = this.state;
     const isTop = PropsLayout === 'topmenu';
-    /**
-     * 从state从获取的menuData
-     */
-    // const menuData = this.getMenuData();
     const layout = (
       <Layout>
         {isTop && !isMobile ? null : (

@@ -3,8 +3,6 @@ import { FormattedMessage, setLocale, getLocale } from 'umi/locale';
 import { Spin, Tag, Menu, Icon, Dropdown, Avatar, Tooltip, Button } from 'antd';
 import moment from 'moment';
 import groupBy from 'lodash/groupBy';
-import NoticeIcon from '../NoticeIcon';
-import HeaderSearch from '../HeaderSearch';
 import styles from './index.less';
 
 export default class GlobalHeaderRight extends PureComponent {
@@ -51,10 +49,7 @@ export default class GlobalHeaderRight extends PureComponent {
   render() {
     const {
       currentUser,
-      fetchingNotices,
-      onNoticeVisibleChange,
       onMenuClick,
-      onNoticeClear,
       theme,
     } = this.props;
     const menu = (
@@ -67,36 +62,20 @@ export default class GlobalHeaderRight extends PureComponent {
           <Icon type="setting" />
           <FormattedMessage id="menu.account.settings" defaultMessage="account settings" />
         </Menu.Item>
-        <Menu.Item key="triggerError">
-          <Icon type="close-circle" />
-          <FormattedMessage id="menu.account.trigger" defaultMessage="Trigger Error" />
-        </Menu.Item>
         <Menu.Divider />
         <Menu.Item key="logout">
           <Icon type="logout" />
-          退出登录
+          <FormattedMessage id="menu.account.logout" defaultMessage="logout" />
         </Menu.Item>
       </Menu>
     );
-    const noticeData = this.getNoticeData();
     let className = styles.right;
     if (theme === 'dark') {
       className = `${styles.right}  ${styles.dark}`;
     }
     return (
       <div className={className}>
-        <HeaderSearch
-          className={`${styles.action} ${styles.search}`}
-          placeholder="站内搜索"
-          dataSource={['搜索提示一', '搜索提示二', '搜索提示三']}
-          onSearch={value => {
-            console.log('input', value); // eslint-disable-line
-          }}
-          onPressEnter={value => {
-            console.log('enter', value); // eslint-disable-line
-          }}
-        />
-        <Tooltip title="使用文档">
+        <Tooltip title="帮助文档">
           <a
             target="_blank"
             href="https://pro.ant.design/docs/getting-started"
@@ -107,36 +86,6 @@ export default class GlobalHeaderRight extends PureComponent {
             <Icon type="question-circle-o" />
           </a>
         </Tooltip>
-        <NoticeIcon
-          className={styles.action}
-          count={currentUser.notifyCount}
-          onItemClick={(item, tabProps) => {
-            console.log(item, tabProps); // eslint-disable-line
-          }}
-          onClear={onNoticeClear}
-          onPopupVisibleChange={onNoticeVisibleChange}
-          loading={fetchingNotices}
-          popupAlign={{ offset: [20, -16] }}
-        >
-          <NoticeIcon.Tab
-            list={noticeData['通知']}
-            title="通知"
-            emptyText="你已查看所有通知"
-            emptyImage="https://gw.alipayobjects.com/zos/rmsportal/wAhyIChODzsoKIOBHcBk.svg"
-          />
-          <NoticeIcon.Tab
-            list={noticeData['消息']}
-            title="消息"
-            emptyText="您已读完所有消息"
-            emptyImage="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
-          />
-          <NoticeIcon.Tab
-            list={noticeData['待办']}
-            title="待办"
-            emptyText="你已完成所有待办"
-            emptyImage="https://gw.alipayobjects.com/zos/rmsportal/HsIsxMZiWKrNUavQUXqx.svg"
-          />
-        </NoticeIcon>
         {currentUser.name ? (
           <Dropdown overlay={menu}>
             <span className={`${styles.action} ${styles.account}`}>

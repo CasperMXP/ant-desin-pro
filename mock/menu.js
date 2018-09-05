@@ -5,6 +5,7 @@ export default {
       name: 'dashboard',
       icon: 'dashboard',
       locale: 'menu.dashboard',
+      // authority:["admin"],
       children: [
         {
           path: '/dashboard/analysis',
