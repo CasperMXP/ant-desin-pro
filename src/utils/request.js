@@ -37,6 +37,25 @@ const checkStatus = response => {
   throw error;
 };
 
+/**
+ * 处理请求带token的response
+ * @param response
+ */
+const checkRequestWithTokenResponse = response => {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  }
+  const errortext = codeMessage[response.success] || response.message;
+  notification.error({
+    message: `请求错误 ${response.message}`,
+    description: errortext,
+  });
+  const error = new Error(errortext);
+  error.name = response.success;
+  error.response = response;
+  throw error;
+}
+
 const cachedSave = (response, hashcode) => {
   /**
    * Clone a response data and store it in sessionStorage
@@ -174,10 +193,39 @@ export function request(
 }
 
 /**
+ * 带token的秦请求
+ */
+export function requestWithToken(url,options) {
+  const defaultOptions = {
+    headers: {
+      "Accept": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-cache",
+      "Authorization": "Bearer ".concat(localStorage.getItem("token"))
+    },
+  };
+  const newOptions = { ...defaultOptions, ...options };
+  return fetch(url,newOptions)
+    .then(checkRequestWithTokenResponse)
+    .then(response => response.json())
+}
+
+
+/**
  * 登录请求函数，ajax和异步
  */
 export function loginRequest(url,options) {
-  return fetch(url, options)
+  const defaultOptions = {
+    headers: {
+      "Accept": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-cache",
+    },
+  };
+  const newOptions = { ...defaultOptions, ...options };
+  return fetch(url, newOptions)
     .then(checkStatus)
     .then(saveToken)
     .then(response => response.json())

@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { FormattedMessage, setLocale, getLocale } from 'umi/locale';
-import { Spin, Tag, Menu, Icon, Dropdown, Avatar, Tooltip, Button } from 'antd';
+import { Spin, Tag, Menu, Icon, Dropdown, Tooltip, Button } from 'antd';
 import moment from 'moment';
 import groupBy from 'lodash/groupBy';
 import styles from './index.less';
@@ -86,16 +86,10 @@ export default class GlobalHeaderRight extends PureComponent {
             <Icon type="question-circle-o" />
           </a>
         </Tooltip>
-        {currentUser.name ? (
+        {currentUser.userName ? (
           <Dropdown overlay={menu}>
             <span className={`${styles.action} ${styles.account}`}>
-              <Avatar
-                size="small"
-                className={styles.avatar}
-                src={currentUser.avatar}
-                alt="avatar"
-              />
-              <span className={styles.name}>{currentUser.name}</span>
+              <span className={styles.name}>{currentUser.userName}</span>
             </span>
           </Dropdown>
         ) : (

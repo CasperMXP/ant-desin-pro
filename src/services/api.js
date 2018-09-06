@@ -111,12 +111,6 @@ export async function updateFakeList(params) {
 export async function userLogin(params) {
   return loginRequest('/api/auth/login', {
     method: 'POST',
-    headers: {
-      "Accept": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-cache",
-    },
     body: JSON.stringify(params),
   });
 }
