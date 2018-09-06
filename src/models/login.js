@@ -22,7 +22,10 @@ export default {
       // Login successfully
       if (response.status === 'ok') {
         reloadAuthorized();
-        yield put(routerRedux.replace('/dashboard/analysis'));
+        /**
+         * 默认约定登录成功后跳转到个人的工作台页面
+         */
+        yield put(routerRedux.replace('/dashboard/workplace'));
       }
     },
 
