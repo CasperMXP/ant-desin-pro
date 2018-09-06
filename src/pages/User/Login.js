@@ -73,10 +73,10 @@ class LoginPage extends Component {
               login.type === 'account' &&
               !submitting &&
               this.renderMessage('账户或密码错误')}
-            <UserName name="userName" defaultValue="admin" />
+            <UserName name="loginName" defaultValue="admin" />
             <Password
               name="password"
-              defaultValue="888888"
+              defaultValue="admin"
               onPressEnter={() => this.loginForm.validateFields(this.handleSubmit)}
             />
           </Tab>

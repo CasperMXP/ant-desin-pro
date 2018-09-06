@@ -35,6 +35,13 @@ export default {
       },
     ],
   ],
+  proxy: {
+    "/api": {
+      "target": "http://localhost:8888/",
+      "changeOrigin": true,
+      // "pathRewrite": { "^/api" : "" }
+    }
+  },
   define: {
     APP_TYPE: process.env.APP_TYPE || '',
   },
@@ -93,5 +100,4 @@ export default {
   cssnano: {
     mergeRules: false,
   },
-  title: 'XTXN PORTAL DEMO',
 };

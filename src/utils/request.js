@@ -1,8 +1,8 @@
 import fetch from 'dva/fetch';
-import { notification } from 'antd';
+import {notification} from 'antd';
 import router from 'umi/router';
 import hash from 'hash.js';
-import { isAntdPro } from './utils';
+import {isAntdPro} from './utils';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -57,13 +57,31 @@ const cachedSave = (response, hashcode) => {
 };
 
 /**
+ * 登录结束存储token和refreshToken到localStorage
+ * @param response
+ */
+const saveToken = response => {
+    const contentType = response.headers.get('Content-Type');
+    if (contentType && contentType.match(/application\/json/i)) {
+      response
+        .clone()
+        .json()
+        .then(content => {
+          localStorage.setItem("token",content.token)
+          localStorage.setItem("refreshToken",content.refreshToken)
+        })
+    }
+    return response
+}
+
+/**
  * Requests a URL, returning a promise.
  *
  * @param  {string} url       The URL we want to request
  * @param  {object} [options] The options we want to pass to "fetch"
  * @return {object}           An object containing either "data" or "err"
  */
-export default function request(
+export function request(
   url,
   options = {
     expirys: isAntdPro(),
@@ -153,4 +171,21 @@ export default function request(
         router.push('/exception/404');
       }
     });
+}
+
+/**
+ * 登录请求函数，ajax和异步
+ */
+export function loginRequest(url,options) {
+  return fetch(url, options)
+    .then(checkStatus)
+    .then(saveToken)
+    .then(response => response.json())
+    .catch(e => {
+      const status = e.name;
+      if (status) {
+        router.push('/user/login');
+      }
+    });
+
 }

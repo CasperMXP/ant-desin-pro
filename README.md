@@ -111,3 +111,10 @@ Any type of contribution is welcome, here are some examples of how you may contr
 - Use Ant Design Pro in your daily work.
 - Submit [issues](http://github.com/ant-design/ant-design-pro/issues) to report bugs or ask questions.
 - Propose [pull requests](http://github.com/ant-design/ant-design-pro/pulls) to improve our code.
+
+
+2018年09月06日
+
+1. 处理登录逻辑和token的的验证
+2. 查看路由的权限的问题
+3. 剔除目前不需要的代码

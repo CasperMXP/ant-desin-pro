@@ -20,7 +20,7 @@ export default {
         {
           path: '/dashboard/workplace',
           name: 'workplace',
-          locale: 'menu.dashboard.monitor',
+          locale: 'menu.dashboard.workplace',
         },
       ],
     },

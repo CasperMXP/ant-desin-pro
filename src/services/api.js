@@ -1,5 +1,5 @@
 import { stringify } from 'qs';
-import request from '@/utils/request';
+import {loginRequest,request} from '@/utils/request';
 
 export async function queryProjectNotice() {
   return request('/api/project/notice');
@@ -103,22 +103,22 @@ export async function updateFakeList(params) {
   });
 }
 
-export async function fakeAccountLogin(params) {
-  return request('/api/login/account', {
+/**
+ * 登录方法必须是ajax的异步请求和POST的提交方式
+ * @param params
+ * @returns {Promise<*>}
+ */
+export async function userLogin(params) {
+  return loginRequest('/api/auth/login', {
     method: 'POST',
-    body: params,
+    headers: {
+      "Accept": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-cache",
+    },
+    body: JSON.stringify(params),
   });
-}
-
-export async function fakeRegister(params) {
-  return request('/api/register', {
-    method: 'POST',
-    body: params,
-  });
-}
-
-export async function queryNotices() {
-  return request('/api/notices');
 }
 
 export async function getFakeCaptcha(mobile) {
