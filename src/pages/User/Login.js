@@ -6,7 +6,6 @@ import styles from './Login.less';
 
 const { Tab, UserName, Password, Mobile, Captcha, Submit } = Login;
 
-export default
 @connect(({ login, loading }) => ({
   login,
   submitting: loading.effects['login/login'],
@@ -14,6 +13,7 @@ export default
 class LoginPage extends Component {
   state = {
     type: 'account',
+    autoLogin: true,
   };
 
   onTabChange = type => {
@@ -94,3 +94,5 @@ class LoginPage extends Component {
     );
   }
 }
+
+export default LoginPage;
