@@ -19,12 +19,32 @@ export default [
       {
         path: '/dashboard',
         name: 'dashboard',
-        icon: 'dashboard',
         routes: [
           {
             path: '/dashboard/workplace',
             name: 'workplace',
             component: './Dashboard/Workplace',
+          },
+        ],
+      },
+      {
+        path: '/system',
+        name: 'system',
+        routes: [
+          {
+            path: '/system/org',
+            name: 'org',
+            component: './System/Org',
+          },
+          {
+            path: '/system/menu',
+            name: 'menu',
+            component: './System/Menu',
+          },
+          {
+            path: '/system/role',
+            name: 'role',
+            component: './System/Role',
           },
         ],
       },
