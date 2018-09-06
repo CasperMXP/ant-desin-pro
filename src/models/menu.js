@@ -1,4 +1,4 @@
-import {query as queryMenus} from '@/services/menu';
+import {queryMenusByLoginName} from '@/services/menu';
 
 /**
  * 参考文档 https://dvajs.com/api/#model
@@ -14,8 +14,8 @@ export default {
    * call执行异步函数，put发出一个action,select用于从state里获取数据
    */
   effects: {
-    *getMenus(_, { call, put }) {
-      const response = yield call(queryMenus);
+    *fetchMenus({payload}, { call, put }) {
+      const response = yield call(queryMenusByLoginName,payload);
       yield put({
         type: 'save',
         payload: response,
@@ -30,7 +30,7 @@ export default {
     save(state, action) {
       return {
         ...state,
-        menuData: action.payload,
+        menuData: action.payload.data,
       };
     },
   },

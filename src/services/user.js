@@ -4,6 +4,7 @@ export async function query() {
   return request('/api/users');
 }
 
-export async function queryCurrent() {
-  return requestWithToken('/api/user/current');
+export async function queryCurrent(loginName) {
+  return requestWithToken(`/api/user/current/${loginName}`);
 }
+

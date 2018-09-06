@@ -15,8 +15,6 @@ export default {
 
     *login({ payload }, { call, put }) {
       const response = yield call(userLogin, payload);
-      console.log('response....................')
-      console.log(response)
       yield put({
         type: 'changeLoginStatus',
         payload: response,

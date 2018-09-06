@@ -63,12 +63,14 @@ class BasicLayout extends React.PureComponent {
     const { dispatch } = this.props;
     dispatch({
       type: 'user/fetchCurrent',
+      payload: sessionStorage.getItem("loginName"),
     });
     dispatch({
       type: 'setting/getSetting',
     });
     dispatch({
-      type: 'menu/getMenus',
+      type: 'menu/fetchMenus',
+      payload: sessionStorage.getItem("loginName"),
     })
     this.renderRef = requestAnimationFrame(() => {
       this.setState({

@@ -1,6 +1,6 @@
-import request from '@/utils/request';
+import {requestWithToken} from "../utils/request";
 
-export async function query() {
-  return request('/api/menus');
+export async function queryMenusByLoginName(loginName) {
+  return requestWithToken(`/api/menus/${loginName}`);
 }
 

@@ -88,6 +88,7 @@ const saveToken = response => {
         .then(content => {
           localStorage.setItem("token",content.token)
           localStorage.setItem("refreshToken",content.refreshToken)
+          sessionStorage.setItem("loginName",content.loginName)
         })
     }
     return response
