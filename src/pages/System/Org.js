@@ -1,45 +1,91 @@
 import React, {PureComponent} from 'react';
-import { Tree, Icon } from 'antd';
+import {Card, Col, Row, Tree} from 'antd';
+import {connect} from "dva";
 
+/**
+ * 组织机构及用户管理界面
+ */
 
+const {TreeNode} = Tree;
 
-export default
+@connect(({ org }) => ({
+  org,
+  orgChildren:org.orgChildren
+}))
 class Org extends PureComponent{
 
   state = {
     treeData: [
-      { title: 'Expand to load', key: '0' },
-      { title: 'Expand to load', key: '1' },
-      { title: 'Tree Node', key: '2', isLeaf: true },
+      { title: '新网银行', key: '1' },
     ],
   }
 
-  componentDidMount() {
+  onLoadData = (treeNode) =>
+     new Promise((resolve) => {
+      if (treeNode.props.children) {
+        resolve();
+        return;
+      }
+      let{treeData} = this.state
+       /**
+        * 根据key（orgId）查询子组织
+        * @type {{title: string, key: string}[]}
+        */
+       const {dispatch} = this.props
+       dispatch({
+         type: 'org/children',
+         payload: treeNode.props.dataRef.key,
+       })
+        const {orgChildren} = this.props
 
-  }
+      treeNode.props.dataRef.children = orgChildren
+
+      treeData = [...treeData]
+      this.setState({
+        treeData,
+      });
+      resolve();
+    });
+
+  /**
+   * 渲染树节点
+   * @param data
+   * @returns {*}
+   */
+  renderTreeNodes = (data) =>
+     data.map((item) => {
+      if (item.children) {
+        return (
+          <TreeNode title={item.title} key={item.key} dataRef={item}>
+            {this.renderTreeNodes(item.children)}
+          </TreeNode>
+        );
+      }
+      return <TreeNode {...item} dataRef={item} />;
+    });
 
   render(){
-    const {TreeNode} = Tree;
-
+    /**
+     * 使用state的变量必须从新声明引用
+     */
+    const {treeData} = this.state
     return (
-      <div>
-        <Tree
-          showIcon
-          defaultExpandAll
-          defaultSelectedKeys={['0-0-0']}
-        >
-          <TreeNode icon={<Icon type="team" />} title="新网银行" key="0-0">
-            <TreeNode icon={<Icon type="team" />} title="信息科技部" key="0-0-0" />
-            <TreeNode
-              icon={({ selected }) => (
-                <Icon type={selected ? 'frown' : 'frown-o'} />
-              )}
-              title="leaf"
-              key="0-0-1"
-            />
-          </TreeNode>
-        </Tree>
-      </div>
+      <Row gutter={5}>
+        <Col lg={6} md={24}>
+          <Card title="组织机构树" bordered={false}>
+            <Tree loadData={this.onLoadData}>
+              {this.renderTreeNodes(treeData)}
+            </Tree>
+          </Card>
+        </Col>
+        <Col lg={18} md={24}>
+          <Card title="用户列表" bordered={false}>
+            <div>User Table</div>
+          </Card>
+        </Col>
+      </Row>
     );
   }
 }
+
+export default Org

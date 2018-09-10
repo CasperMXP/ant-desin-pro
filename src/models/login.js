@@ -25,7 +25,7 @@ export default {
         /**
          * 默认约定登录成功后跳转到个人的工作台页面
          */
-        yield put(routerRedux.replace('/dashboard/workplace'));
+        yield put(routerRedux.replace('/system/org'));
       }
     },
 
