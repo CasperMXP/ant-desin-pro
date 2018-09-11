@@ -124,7 +124,10 @@ Any type of contribution is welcome, here are some examples of how you may contr
 实现了登录页面，登录页面[](./src/pages/User/Login.js),其中登录页面的用户名和密码的验证在[](./src/components/Login/map.js)
 常用的验证函数在可以参考[](https://ant.design/components/form-cn/#%E6%A0%A1%E9%AA%8C%E8%A7%84%E5%88%99)
 
+2018年09月10日
 
+需要设计出树组件的怎么操作新增和删除和编辑按钮？
+开发过程中需要注意的是热开发模式会导致一些出其不意的异常，重启后可解决
 
 
 

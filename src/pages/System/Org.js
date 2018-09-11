@@ -66,7 +66,7 @@ class Org extends PureComponent{
         <Fragment>
           <a onClick={() => this.handleUpdateModalVisible(true, record)}>编辑</a>
           <Divider type="vertical" />
-          <a href="">详细</a>
+          <a href="">删除</a>
         </Fragment>
       ),
     },
