@@ -1,8 +1,8 @@
 import fetch from 'dva/fetch';
-import {notification} from 'antd';
+import { notification } from 'antd';
 import router from 'umi/router';
 import hash from 'hash.js';
-import {isAntdPro} from './utils';
+import { isAntdPro } from './utils';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -54,7 +54,7 @@ const checkRequestWithTokenResponse = response => {
   error.name = response.success;
   error.response = response;
   throw error;
-}
+};
 
 const cachedSave = (response, hashcode) => {
   /**
@@ -80,19 +80,19 @@ const cachedSave = (response, hashcode) => {
  * @param response
  */
 const saveToken = response => {
-    const contentType = response.headers.get('Content-Type');
-    if (contentType && contentType.match(/application\/json/i)) {
-      response
-        .clone()
-        .json()
-        .then(content => {
-          localStorage.setItem("token",content.token)
-          localStorage.setItem("refreshToken",content.refreshToken)
-          sessionStorage.setItem("loginName",content.loginName)
-        })
-    }
-    return response
-}
+  const contentType = response.headers.get('Content-Type');
+  if (contentType && contentType.match(/application\/json/i)) {
+    response
+      .clone()
+      .json()
+      .then(content => {
+        localStorage.setItem('token', content.token);
+        localStorage.setItem('refreshToken', content.refreshToken);
+        sessionStorage.setItem('loginName', content.loginName);
+      });
+  }
+  return response;
+};
 
 /**
  * Requests a URL, returning a promise.
@@ -196,33 +196,54 @@ export function request(
 /**
  * 带token的秦请求
  */
-export function requestWithToken(url,options) {
+export function requestWithToken(url, options) {
   const defaultOptions = {
     headers: {
-      "Accept": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-cache",
-      "Authorization": "Bearer ".concat(localStorage.getItem("token"))
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-cache',
+      Authorization: 'Bearer '.concat(localStorage.getItem('token')),
     },
   };
   const newOptions = { ...defaultOptions, ...options };
-  return fetch(url,newOptions)
-    .then(checkRequestWithTokenResponse)
-    .then(response => response.json())
-}
 
+  if (
+    newOptions.method === 'POST' ||
+    newOptions.method === 'PUT' ||
+    newOptions.method === 'DELETE'
+  ) {
+    if (!(newOptions.body instanceof FormData)) {
+      newOptions.headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
+        ...newOptions.headers,
+      };
+      newOptions.body = JSON.stringify(newOptions.body);
+    } else {
+      // newOptions.body is FormData
+      newOptions.headers = {
+        Accept: 'application/json',
+        ...newOptions.headers,
+      };
+    }
+  }
+
+  return fetch(url, newOptions)
+    .then(checkRequestWithTokenResponse)
+    .then(response => response.json());
+}
 
 /**
  * 登录请求函数，ajax和异步
  */
-export function loginRequest(url,options) {
+export function loginRequest(url, options) {
   const defaultOptions = {
     headers: {
-      "Accept": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-cache",
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-cache',
     },
   };
   const newOptions = { ...defaultOptions, ...options };
@@ -236,5 +257,4 @@ export function loginRequest(url,options) {
         router.push('/user/login');
       }
     });
-
 }

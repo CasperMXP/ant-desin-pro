@@ -129,6 +129,15 @@ Any type of contribution is welcome, here are some examples of how you may contr
 需要设计出树组件的怎么操作新增和删除和编辑按钮？
 开发过程中需要注意的是热开发模式会导致一些出其不意的异常，重启后可解决
 
+参考文档 https://dvajs.com/api/#model
+
+2018年09月11日
+
+antd tree组件 功能太简单根本无法满足以前的原型设计，所有都替换成表格的形式来做
+
+表单参考页面
+https://ant.design/components/form-cn/#components-form-demo-register
+
 
 
 

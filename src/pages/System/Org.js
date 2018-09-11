@@ -1,178 +1,517 @@
-import React, {Fragment, PureComponent} from 'react';
-import {Button, Card, Col, Divider, Form, Input, Modal, Row, Select, Table, Tree} from 'antd';
-import {connect} from "dva";
-import styles from "../List/TableList.less";
+import React, { Fragment, PureComponent } from 'react';
+import { connect } from 'dva';
+import {
+  Button,
+  Card,
+  Col,
+  DatePicker,
+  Dropdown,
+  Form,
+  Icon,
+  Input,
+  Menu,
+  message,
+  Modal,
+  Radio,
+  Row,
+  Select,
+  Steps,
+  TreeSelect,
+} from 'antd';
+import StandardTable from '@/components/StandardTable';
+import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
+import styles from '../List/TableList.less';
+
+const FormItem = Form.Item;
+const { Step } = Steps;
+const { TextArea } = Input;
+const { Option } = Select;
+const RadioGroup = Radio.Group;
+const getValue = obj =>
+  Object.keys(obj)
+    .map(key => obj[key])
+    .join(',');
 
 /**
- * 组织机构及用户管理界面
- * AntD-Tree参考 https://ant.design/components/tree-cn/#API
+ * 新增组织面板
+ * @type {React.ComponentClass<RcBaseFormProps & Omit<FormComponentProps, keyof FormComponentProps>>}
  */
+const CreateForm = Form.create()(props => {
+  const { modalVisible, form, handleAdd, handleModalVisible, orgTree } = props;
+  const okHandle = () => {
+    form.validateFields((err, fieldsValue) => {
+      if (err) return;
+      form.resetFields();
+      handleAdd(fieldsValue);
+    });
+  };
 
-const {TreeNode} = Tree;
-const FormItem = Form.Item;
-const { Option } = Select;
+  const formItemLayout = {
+    labelCol: {
+      xs: { span: 24 },
+      sm: { span: 5 },
+    },
+    wrapperCol: {
+      xs: { span: 24 },
+      sm: { span: 19 },
+    },
+  };
 
-@connect(({ org, user }) => ({
-  org,
-  orgChildren: org.orgChildren,
-  users:user.users,
-}))
+  return (
+    <Modal
+      destroyOnClose
+      title="新建组织"
+      visible={modalVisible}
+      onOk={okHandle}
+      onCancel={() => handleModalVisible()}
+    >
+      <FormItem {...formItemLayout} label="组织编号">
+        {form.getFieldDecorator('orgId', {
+          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
+        })(<Input placeholder="请输入" />)}
+      </FormItem>
+      <FormItem {...formItemLayout} label="组织名称">
+        {form.getFieldDecorator('orgName', {
+          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
+        })(<Input placeholder="请输入" />)}
+      </FormItem>
+      <FormItem {...formItemLayout} label="父组织">
+        {form.getFieldDecorator('parentOrgId', {
+          rules: [{ required: true, message: '请选择一个组织!' }],
+        })(
+          <TreeSelect
+            showSearch
+            allowClear
+            style={{ width: 300 }}
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            treeData={orgTree}
+            placeholder="请选择一个组织"
+            treeDefaultExpandAll
+          />
+        )}
+      </FormItem>
+      <FormItem {...formItemLayout} label="描述">
+        {form.getFieldDecorator('desc', {
+          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
+        })(<Input placeholder="请输入" />)}
+      </FormItem>
+    </Modal>
+  );
+});
+
 @Form.create()
-class Org extends PureComponent{
+class UpdateForm extends PureComponent {
+  constructor(props) {
+    super(props);
 
-  state = {
-    treeData: [
-      { title: '新网银行', key: '1' },
-    ],
+    this.state = {
+      formVals: {
+        name: props.values.name,
+        desc: props.values.desc,
+        key: props.values.key,
+        target: '0',
+        template: '0',
+        type: '1',
+        time: '',
+        frequency: 'month',
+      },
+      currentStep: 0,
+    };
+
+    this.formLayout = {
+      labelCol: { span: 7 },
+      wrapperCol: { span: 13 },
+    };
   }
 
+  handleNext = currentStep => {
+    const { form, handleUpdate } = this.props;
+    const { formVals: oldValue } = this.state;
+    form.validateFields((err, fieldsValue) => {
+      if (err) return;
+      const formVals = { ...oldValue, ...fieldsValue };
+      this.setState(
+        {
+          formVals,
+        },
+        () => {
+          if (currentStep < 2) {
+            this.forward();
+          } else {
+            handleUpdate(formVals);
+          }
+        }
+      );
+    });
+  };
+
+  backward = () => {
+    const { currentStep } = this.state;
+    this.setState({
+      currentStep: currentStep - 1,
+    });
+  };
+
+  forward = () => {
+    const { currentStep } = this.state;
+    this.setState({
+      currentStep: currentStep + 1,
+    });
+  };
+
+  renderContent = (currentStep, formVals) => {
+    const { form } = this.props;
+    if (currentStep === 1) {
+      return [
+        <FormItem key="target" {...this.formLayout} label="监控对象">
+          {form.getFieldDecorator('target', {
+            initialValue: formVals.target,
+          })(
+            <Select style={{ width: '100%' }}>
+              <Option value="0">表一</Option>
+              <Option value="1">表二</Option>
+            </Select>
+          )}
+        </FormItem>,
+        <FormItem key="template" {...this.formLayout} label="规则模板">
+          {form.getFieldDecorator('template', {
+            initialValue: formVals.template,
+          })(
+            <Select style={{ width: '100%' }}>
+              <Option value="0">规则模板一</Option>
+              <Option value="1">规则模板二</Option>
+            </Select>
+          )}
+        </FormItem>,
+        <FormItem key="type" {...this.formLayout} label="规则类型">
+          {form.getFieldDecorator('type', {
+            initialValue: formVals.type,
+          })(
+            <RadioGroup>
+              <Radio value="0">强</Radio>
+              <Radio value="1">弱</Radio>
+            </RadioGroup>
+          )}
+        </FormItem>,
+      ];
+    }
+    if (currentStep === 2) {
+      return [
+        <FormItem key="time" {...this.formLayout} label="开始时间">
+          {form.getFieldDecorator('time', {
+            rules: [{ required: true, message: '请选择开始时间！' }],
+          })(
+            <DatePicker
+              style={{ width: '100%' }}
+              showTime
+              format="YYYY-MM-DD HH:mm:ss"
+              placeholder="选择开始时间"
+            />
+          )}
+        </FormItem>,
+        <FormItem key="frequency" {...this.formLayout} label="调度周期">
+          {form.getFieldDecorator('frequency', {
+            initialValue: formVals.frequency,
+          })(
+            <Select style={{ width: '100%' }}>
+              <Option value="month">月</Option>
+              <Option value="week">周</Option>
+            </Select>
+          )}
+        </FormItem>,
+      ];
+    }
+    return [
+      <FormItem key="name" {...this.formLayout} label="规则名称">
+        {form.getFieldDecorator('name', {
+          rules: [{ required: true, message: '请输入规则名称！' }],
+          initialValue: formVals.name,
+        })(<Input placeholder="请输入" />)}
+      </FormItem>,
+      <FormItem key="desc" {...this.formLayout} label="规则描述">
+        {form.getFieldDecorator('desc', {
+          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
+          initialValue: formVals.desc,
+        })(<TextArea rows={4} placeholder="请输入至少五个字符" />)}
+      </FormItem>,
+    ];
+  };
+
+  renderFooter = currentStep => {
+    const { handleUpdateModalVisible } = this.props;
+    if (currentStep === 1) {
+      return [
+        <Button key="back" style={{ float: 'left' }} onClick={this.backward}>
+          上一步
+        </Button>,
+        <Button key="cancel" onClick={() => handleUpdateModalVisible()}>
+          取消
+        </Button>,
+        <Button key="forward" type="primary" onClick={() => this.handleNext(currentStep)}>
+          下一步
+        </Button>,
+      ];
+    }
+    if (currentStep === 2) {
+      return [
+        <Button key="back" style={{ float: 'left' }} onClick={this.backward}>
+          上一步
+        </Button>,
+        <Button key="cancel" onClick={() => handleUpdateModalVisible()}>
+          取消
+        </Button>,
+        <Button key="submit" type="primary" onClick={() => this.handleNext(currentStep)}>
+          完成
+        </Button>,
+      ];
+    }
+    return [
+      <Button key="cancel" onClick={() => handleUpdateModalVisible()}>
+        取消
+      </Button>,
+      <Button key="forward" type="primary" onClick={() => this.handleNext(currentStep)}>
+        下一步
+      </Button>,
+    ];
+  };
+
+  render() {
+    const { updateModalVisible, handleUpdateModalVisible } = this.props;
+    const { currentStep, formVals } = this.state;
+
+    return (
+      <Modal
+        width={640}
+        bodyStyle={{ padding: '32px 40px 48px' }}
+        destroyOnClose
+        title="规则配置"
+        visible={updateModalVisible}
+        footer={this.renderFooter(currentStep)}
+        onCancel={() => handleUpdateModalVisible()}
+      >
+        <Steps style={{ marginBottom: 28 }} size="small" current={currentStep}>
+          <Step title="基本信息" />
+          <Step title="配置规则属性" />
+          <Step title="设定调度周期" />
+        </Steps>
+        {this.renderContent(currentStep, formVals)}
+      </Modal>
+    );
+  }
+}
+
+/* eslint react/no-multi-comp:0 */
+@connect(({ org, loading }) => ({
+  org,
+  orgTree: org.orgTree,
+  loading: loading.models.org,
+}))
+@Form.create()
+class Org extends PureComponent {
+  state = {
+    modalVisible: false,
+    updateModalVisible: false,
+    selectedRows: [],
+    formValues: {},
+    stepFormValues: {},
+  };
+
   /**
-   * 定义的表格展示列结构
+   * 定义表格列信息
    * @type {*[]}
    */
   columns = [
     {
-      title: '用户编号',
-      dataIndex: 'userId',
-    },
-    {
-      title: '登录名',
-      dataIndex: 'loginName',
-    },
-    {
-      title: '手机号',
-      dataIndex: 'phone',
-    },
-    {
-      title: '邮箱',
-      dataIndex: 'email',
-    },
-    {
-      title: '组织机构',
+      title: '组织ID',
       dataIndex: 'orgId',
+    },
+    {
+      title: '组织名称',
+      dataIndex: 'orgName',
+    },
+    {
+      title: '父组织名称',
+      dataIndex: 'pOrgName',
+    },
+    {
+      title: '描述',
+      dataIndex: 'desc',
     },
     {
       title: '有效标志',
       dataIndex: 'validFlag',
     },
     {
-      title:'创建时间',
-      dataIndex:'createTime',
+      title: '创建人',
+      dataIndex: 'creatorName',
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createTime',
     },
     {
       title: '操作',
       render: (text, record) => (
         <Fragment>
           <a onClick={() => this.handleUpdateModalVisible(true, record)}>编辑</a>
-          <Divider type="vertical" />
-          <a href="">删除</a>
         </Fragment>
       ),
     },
   ];
 
-  rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-    },
-    getCheckboxProps: record => ({
-      disabled: record.name === 'Disabled User', // Column configuration not to be checked
-      name: record.name,
-    }),
-  };
-
   componentDidMount() {
     const { dispatch } = this.props;
+    // dispatch({
+    //   type: 'org/fetch',
+    // });
     dispatch({
-      type: 'user/fetch',
+      type: 'org/fetchOrgTree',
     });
   }
 
-  onLoadData = (treeNode) =>
-     new Promise((resolve) => {
-      if (treeNode.props.children) {
-        resolve();
-        return;
-      }
-      let{treeData} = this.state
-       /**
-        * 根据key（orgId）查询子组织
-        * @type {{title: string, key: string}[]}
-        */
-       const {dispatch} = this.props
-       dispatch({
-         type: 'org/children',
-         payload: treeNode.props.dataRef.key,
-       })
-        const {orgChildren} = this.props
+  handleStandardTableChange = (pagination, filtersArg, sorter) => {
+    const { dispatch } = this.props;
+    const { formValues } = this.state;
 
-      treeNode.props.dataRef.children = orgChildren
+    const filters = Object.keys(filtersArg).reduce((obj, key) => {
+      const newObj = { ...obj };
+      newObj[key] = getValue(filtersArg[key]);
+      return newObj;
+    }, {});
 
-      treeData = [...treeData]
-      this.setState({
-        treeData,
-      });
-      resolve();
-    });
-
-  /**
-   * Todo
-   * 处理树节点点击触发事件,点击后右边表格查询当前组织下的人员列表信息
-   * @param selectedKeys 当前点击节点的key也就是组织机构id
-   */
-  handleSelect = (selectedKeys) => {
-
-  }
-
-  /**
-   * 处理树节点的鼠标右击事件，弹出面板框，展示，新增，删除，修改按钮
-   * @param event
-   * @param node
-   */
-  handleRightClick = (event,node)=> {
-    const{title,eventKey} = node.props
-    /**
-     * 根节点不能删除
-     */
-    if(eventKey === '1'){
-      Modal.warning({
-        title:'顶层组织【'.concat(title).concat('】不能删除'),
-        content:'顶层组织【'.concat(title).concat('】不能删除'),
-      });
-    }else{
-      Modal.confirm({
-        title: '是否删除【'.concat(title).concat('】') ,
-        content: '确定删除【'.concat(title).concat('】吗？\''),
-        okText: '确认',
-        cancelText: '取消',
-        onOk: () => this.deleteOrgByKey(eventKey),
-      });
+    const params = {
+      currentPage: pagination.current,
+      pageSize: pagination.pageSize,
+      ...formValues,
+      ...filters,
+    };
+    if (sorter.field) {
+      params.sorter = `${sorter.field}_${sorter.order}`;
     }
 
-  }
+    dispatch({
+      type: 'org/fetch',
+      payload: params,
+    });
+  };
 
-  deleteOrgByKey = (key) => {
+  handleFormReset = () => {
+    const { form, dispatch } = this.props;
+    form.resetFields();
+    this.setState({
+      formValues: {},
+    });
+    dispatch({
+      type: 'org/fetch',
+      payload: {},
+    });
+  };
 
-  }
+  toggleForm = () => {
+    const { expandForm } = this.state;
+    this.setState({
+      expandForm: !expandForm,
+    });
+  };
 
+  handleMenuClick = e => {
+    const { dispatch } = this.props;
+    const { selectedRows } = this.state;
+
+    if (!selectedRows) return;
+    switch (e.key) {
+      case 'remove':
+        dispatch({
+          type: 'org/remove',
+          payload: {
+            key: selectedRows.map(row => row.key),
+          },
+          callback: () => {
+            this.setState({
+              selectedRows: [],
+            });
+          },
+        });
+        break;
+      default:
+        break;
+    }
+  };
+
+  handleSelectRows = rows => {
+    this.setState({
+      selectedRows: rows,
+    });
+  };
+
+  handleSearch = e => {
+    e.preventDefault();
+
+    const { dispatch, form } = this.props;
+
+    form.validateFields((err, fieldsValue) => {
+      if (err) return;
+
+      const values = {
+        ...fieldsValue,
+        updatedAt: fieldsValue.updatedAt && fieldsValue.updatedAt.valueOf(),
+      };
+
+      this.setState({
+        formValues: values,
+      });
+
+      dispatch({
+        type: 'org/fetch',
+        payload: values,
+      });
+    });
+  };
+
+  handleModalVisible = flag => {
+    this.setState({
+      modalVisible: !!flag,
+    });
+  };
+
+  handleUpdateModalVisible = (flag, record) => {
+    this.setState({
+      updateModalVisible: !!flag,
+      stepFormValues: record || {},
+    });
+  };
 
   /**
-   * 渲染树节点
-   * @param data
-   * @returns {*}
+   * 新增组织方法
+   * @param fields
    */
-  renderTreeNodes = (data) =>
-     data.map((item) => {
-      if (item.children) {
-        return (
-          <TreeNode title={item.title} key={item.key} dataRef={item}>
-            {this.renderTreeNodes(item.children)}
-          </TreeNode>
-        );
-      }
-      return <TreeNode {...item} dataRef={item} />;
+  handleAdd = fields => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'org/add',
+      payload: {
+        desc: fields,
+      },
     });
+    message.success('添加组织成功');
+    this.handleModalVisible();
+  };
+
+  handleUpdate = fields => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'org/update',
+      payload: {
+        name: fields.name,
+        desc: fields.desc,
+        key: fields.key,
+      },
+    });
+
+    message.success('配置成功');
+    this.handleUpdateModalVisible();
+  };
 
   renderSimpleForm() {
     const {
@@ -181,27 +520,22 @@ class Org extends PureComponent{
     return (
       <Form onSubmit={this.handleSearch} layout="inline">
         <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
-          <Col md={6} sm={24}>
-            <FormItem label="账户名">
+          <Col md={8} sm={24}>
+            <FormItem label="组织名称">
               {getFieldDecorator('name')(<Input placeholder="请输入" />)}
             </FormItem>
           </Col>
-          <Col md={6} sm={24}>
-            <FormItem label="手机号">
-              {getFieldDecorator('phone')(<Input placeholder="请输入" />)}
-            </FormItem>
-          </Col>
-          <Col md={6} sm={24}>
+          <Col md={8} sm={24}>
             <FormItem label="有效状态">
               {getFieldDecorator('status')(
                 <Select placeholder="请选择" style={{ width: '100%' }}>
-                  <Option value="0">有效</Option>
-                  <Option value="1">无效</Option>
+                  <Option value="0">无效</Option>
+                  <Option value="1">有效</Option>
                 </Select>
               )}
             </FormItem>
           </Col>
-          <Col md={6} sm={24}>
+          <Col md={8} sm={24}>
             <span className={styles.submitButtons}>
               <Button type="primary" htmlType="submit">
                 查询
@@ -216,30 +550,69 @@ class Org extends PureComponent{
     );
   }
 
-  render(){
-    const {treeData} = this.state
-    const{users} = this.props
+  render() {
+    const {
+      org: { data },
+      orgTree,
+      loading,
+    } = this.props;
+    const { selectedRows, modalVisible, updateModalVisible, stepFormValues } = this.state;
+    const menu = (
+      <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
+        <Menu.Item key="remove">删除</Menu.Item>
+        <Menu.Item key="approval">批量审批</Menu.Item>
+      </Menu>
+    );
 
+    const parentMethods = {
+      handleAdd: this.handleAdd,
+      handleModalVisible: this.handleModalVisible,
+    };
+    const updateMethods = {
+      handleUpdateModalVisible: this.handleUpdateModalVisible,
+      handleUpdate: this.handleUpdate,
+    };
     return (
-      <Row gutter={5}>
-        <Col lg={6} md={24}>
-          <Card title="组织机构树" bordered={false}>
-            <Tree onSelect={this.handleSelect} onRightClick={({event,node})=>this.handleRightClick(event,node)} loadData={(treeNode)=>this.onLoadData(treeNode)}>
-              {this.renderTreeNodes(treeData)}
-            </Tree>
-          </Card>
-        </Col>
-        <Col lg={18} md={24}>
-          <Card title="用户列表" bordered={false}>
-            <div className={styles.tableList}>
-              <div className={styles.tableListForm}>{this.renderSimpleForm()}</div>
-              <Table rowKey='userId' rowSelection={this.rowSelection} dataSource={users} columns={this.columns} />
+      <PageHeaderWrapper title="组织表格">
+        <Card bordered={false}>
+          <div className={styles.tableList}>
+            <div className={styles.tableListForm}>{this.renderSimpleForm()}</div>
+            <div className={styles.tableListOperator}>
+              <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
+                新建
+              </Button>
+              {selectedRows.length > 0 && (
+                <span>
+                  <Button>批量操作</Button>
+                  <Dropdown overlay={menu}>
+                    <Button>
+                      更多操作 <Icon type="down" />
+                    </Button>
+                  </Dropdown>
+                </span>
+              )}
             </div>
-          </Card>
-        </Col>
-      </Row>
+            <StandardTable
+              selectedRows={selectedRows}
+              loading={loading}
+              data={data}
+              columns={this.columns}
+              onSelectRow={this.handleSelectRows}
+              onChange={this.handleStandardTableChange}
+            />
+          </div>
+        </Card>
+        <CreateForm {...parentMethods} modalVisible={modalVisible} orgTree={orgTree} />
+        {stepFormValues && Object.keys(stepFormValues).length ? (
+          <UpdateForm
+            {...updateMethods}
+            updateModalVisible={updateModalVisible}
+            values={stepFormValues}
+          />
+        ) : null}
+      </PageHeaderWrapper>
     );
   }
 }
 
-export default Org
+export default Org;
