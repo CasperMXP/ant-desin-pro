@@ -1,15 +1,13 @@
 import React, { Fragment, PureComponent } from 'react';
 import { connect } from 'dva';
 import {
+  Badge,
   Button,
   Card,
   Col,
   DatePicker,
-  Dropdown,
   Form,
-  Icon,
   Input,
-  Menu,
   message,
   Modal,
   Radio,
@@ -20,8 +18,11 @@ import {
 } from 'antd';
 import StandardTable from '@/components/StandardTable';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-
+import moment from 'moment';
 import styles from '../List/TableList.less';
+
+const statusMap = ['1', '0'];
+const status = ['无效', '有效'];
 
 const FormItem = Form.Item;
 const { Step } = Steps;
@@ -81,13 +82,11 @@ const CreateForm = Form.create()(props => {
           rules: [{ required: true, message: '请选择一个组织!' }],
         })(
           <TreeSelect
-            showSearch
             allowClear
             style={{ width: 300 }}
             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
             treeData={orgTree}
             placeholder="请选择一个组织"
-            treeDefaultExpandAll
           />
         )}
       </FormItem>
@@ -331,16 +330,29 @@ class Org extends PureComponent {
       dataIndex: 'orgName',
     },
     {
-      title: '父组织名称',
-      dataIndex: 'pOrgName',
+      title: '父组织ID',
+      dataIndex: 'pid',
     },
     {
       title: '描述',
-      dataIndex: 'desc',
+      dataIndex: 'description',
     },
     {
-      title: '有效标志',
+      title: '有效状态',
       dataIndex: 'validFlag',
+      filters: [
+        {
+          text: status[0],
+          value: 0,
+        },
+        {
+          text: status[1],
+          value: 1,
+        },
+      ],
+      render(val) {
+        return <Badge status={statusMap[val]} text={status[val]} />;
+      },
     },
     {
       title: '创建人',
@@ -349,6 +361,18 @@ class Org extends PureComponent {
     {
       title: '创建时间',
       dataIndex: 'createTime',
+      sorter: true,
+      render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
+    },
+    {
+      title: '最近更新人',
+      dataIndex: 'lastUpdateBy',
+    },
+    {
+      title: '最近更新时间',
+      dataIndex: 'lastUpdateTime',
+      sorter: true,
+      render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
     },
     {
       title: '操作',
@@ -362,9 +386,14 @@ class Org extends PureComponent {
 
   componentDidMount() {
     const { dispatch } = this.props;
-    // dispatch({
-    //   type: 'org/fetch',
-    // });
+    const pageInfo = {
+      pageSize: 10,
+      current: 1,
+    };
+    dispatch({
+      type: 'org/fetch',
+      payload: pageInfo,
+    });
     dispatch({
       type: 'org/fetchOrgTree',
     });
@@ -381,7 +410,7 @@ class Org extends PureComponent {
     }, {});
 
     const params = {
-      currentPage: pagination.current,
+      current: pagination.current,
       pageSize: pagination.pageSize,
       ...formValues,
       ...filters,
@@ -415,27 +444,22 @@ class Org extends PureComponent {
     });
   };
 
-  handleMenuClick = e => {
+  handleDeleteClick = () => {
     const { dispatch } = this.props;
     const { selectedRows } = this.state;
 
-    if (!selectedRows) return;
-    switch (e.key) {
-      case 'remove':
-        dispatch({
-          type: 'org/remove',
-          payload: {
-            key: selectedRows.map(row => row.key),
-          },
-          callback: () => {
-            this.setState({
-              selectedRows: [],
-            });
-          },
-        });
-        break;
-      default:
-        break;
+    if (selectedRows) {
+      dispatch({
+        type: 'org/remove',
+        payload: {
+          key: selectedRows.map(row => row.key),
+        },
+        callback: () => {
+          this.setState({
+            selectedRows: [],
+          });
+        },
+      });
     }
   };
 
@@ -455,7 +479,6 @@ class Org extends PureComponent {
 
       const values = {
         ...fieldsValue,
-        updatedAt: fieldsValue.updatedAt && fieldsValue.updatedAt.valueOf(),
       };
 
       this.setState({
@@ -520,22 +543,12 @@ class Org extends PureComponent {
     return (
       <Form onSubmit={this.handleSearch} layout="inline">
         <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
-          <Col md={8} sm={24}>
+          <Col md={12} sm={24}>
             <FormItem label="组织名称">
-              {getFieldDecorator('name')(<Input placeholder="请输入" />)}
+              {getFieldDecorator('orgName')(<Input placeholder="请输入" />)}
             </FormItem>
           </Col>
-          <Col md={8} sm={24}>
-            <FormItem label="有效状态">
-              {getFieldDecorator('status')(
-                <Select placeholder="请选择" style={{ width: '100%' }}>
-                  <Option value="0">无效</Option>
-                  <Option value="1">有效</Option>
-                </Select>
-              )}
-            </FormItem>
-          </Col>
-          <Col md={8} sm={24}>
+          <Col md={12} sm={24}>
             <span className={styles.submitButtons}>
               <Button type="primary" htmlType="submit">
                 查询
@@ -557,12 +570,6 @@ class Org extends PureComponent {
       loading,
     } = this.props;
     const { selectedRows, modalVisible, updateModalVisible, stepFormValues } = this.state;
-    const menu = (
-      <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
-        <Menu.Item key="remove">删除</Menu.Item>
-        <Menu.Item key="approval">批量审批</Menu.Item>
-      </Menu>
-    );
 
     const parentMethods = {
       handleAdd: this.handleAdd,
@@ -583,12 +590,7 @@ class Org extends PureComponent {
               </Button>
               {selectedRows.length > 0 && (
                 <span>
-                  <Button>批量操作</Button>
-                  <Dropdown overlay={menu}>
-                    <Button>
-                      更多操作 <Icon type="down" />
-                    </Button>
-                  </Dropdown>
+                  <Button onClick={this.handleDeleteClick}>批量失效</Button>
                 </span>
               )}
             </div>

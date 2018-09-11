@@ -31,18 +31,36 @@ export default {
         type: 'save',
         payload: response,
       });
-
-      const response1 = yield call(queryOrgTree, payload);
+      /**
+       * 新增后刷新新增是下拉选择组织机构树
+       */
+      const orgTreeResponse = yield call(queryOrgTree, payload);
       yield put({
         type: 'saveOrgTree',
-        payload: response1,
+        payload: orgTreeResponse,
       });
     },
-    *remove({ payload }, { call, put }) {
+    *remove({ payload, callback }, { call, put }) {
       const response = yield call(removeOrg, payload);
       yield put({
         type: 'save',
         payload: response,
+      });
+      if (callback) callback();
+
+      const orgTableResponse = yield call(queryOrg, payload);
+      yield put({
+        type: 'save',
+        payload: orgTableResponse,
+      });
+
+      /**
+       * 删除后刷新新增是下拉选择组织机构树
+       */
+      const orgTreeResponse = yield call(queryOrgTree, payload);
+      yield put({
+        type: 'saveOrgTree',
+        payload: orgTreeResponse,
       });
     },
     *update({ payload, callback }, { call, put }) {

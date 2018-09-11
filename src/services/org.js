@@ -1,13 +1,18 @@
-import { stringify } from 'qs';
 import { requestWithToken } from '../utils/request';
 
 export async function queryOrg(params) {
-  return requestWithToken(`/api/orgs?${stringify(params)}`);
+  return requestWithToken('/api/orgs', {
+    method: 'POST',
+    body: {
+      ...params,
+      method: 'POST',
+    },
+  });
 }
 
 export async function removeOrg(params) {
   return requestWithToken('/api/org', {
-    method: 'POST',
+    method: 'DELETE',
     body: {
       ...params,
       method: 'delete',
