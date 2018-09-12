@@ -1,4 +1,4 @@
-import {queryMenusByLoginName} from '@/services/menu';
+import {queryMenusByLoginName,queryTreeData,queryMenuChildren,removeMenuByMenuId} from '@/services/menu';
 
 /**
  * 参考文档 https://dvajs.com/api/#model
@@ -8,6 +8,8 @@ export default {
 
   state: {
     menuData: [],
+    treeData: [],
+    menuChildren: []
   },
   /**
    * 处理异步操作和业务逻辑，不直接修改state,由action触发，可以触发action,可以和服务器交互，可以获取全局的state
@@ -21,6 +23,29 @@ export default {
         payload: response,
       });
     },
+    *fetchTreeData({payload}, { call, put } ) {
+      const response = yield call(queryTreeData,payload);
+      yield put({
+        type: 'saveTreeData',
+        payload: response,
+      });
+    },
+    *children({payload}, { call, put } ) {
+      const response = yield call(queryMenuChildren,payload);
+      yield put({
+        type: 'saveMenuChildren',
+        payload: response,
+      });
+    },
+    *remove({payload}, { call, put } ) {
+      const response = yield call(removeMenuByMenuId,payload);
+      yield put({
+        type: 'saveMenuChildren',
+        payload: response,
+      });
+
+    },
+
 
   },
   /**
@@ -31,6 +56,18 @@ export default {
       return {
         ...state,
         menuData: action.payload.data,
+      };
+    },
+    saveTreeData(state, action) {
+      return {
+        ...state,
+        treeData: action.payload.data,
+      };
+    },
+    saveMenuChildren(state, action) {
+      return {
+        ...state,
+        menuChildren: action.payload.data,
       };
     },
   },
