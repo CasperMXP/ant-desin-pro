@@ -25,6 +25,7 @@ const { TextArea } = Input;
 }))
 @Form.create()
 class BasicForms extends PureComponent {
+
   handleSubmit = e => {
     const { dispatch, form } = this.props;
     e.preventDefault();

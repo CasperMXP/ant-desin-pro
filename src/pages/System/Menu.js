@@ -1,67 +1,13 @@
 import React, {PureComponent} from 'react';
-import {Card, Col, Modal, Row, Tree, Form, Input, TreeSelect} from 'antd';
+import {Button, Card, Col, Divider, Drawer, Form, Icon, Input, Modal, Row, Tree, TreeSelect} from 'antd';
 import {connect} from 'dva';
+import styles from './Menu.less'
 
 const {TreeNode} = Tree;
 const FormItem = Form.Item;
+let uuid = 0;
 
-
-const CreateForm = Form.create()(props => {
-  const { form, handleAdd,selectMenuTree } = props;
-
-  const okHandle = () => {
-    form.validateFields((err, fieldsValue) => {
-      if (err) return;
-      form.resetFields();
-      handleAdd(fieldsValue);
-    });
-  };
-
-  const formItemLayout = {
-    labelCol: {
-      xs: { span: 24 },
-      sm: { span: 4 },
-    },
-    wrapperCol: {
-      xs: { span: 24 },
-      sm: { span: 20 },
-    },
-  };
-
-  return (
-    <div>
-      <FormItem {...formItemLayout} label="组织编号">
-        {form.getFieldDecorator('orgId', {
-          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
-        })(<Input placeholder="请输入" />)}
-      </FormItem>
-      <FormItem {...formItemLayout} label="组织名称">
-        {form.getFieldDecorator('orgName', {
-          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
-        })(<Input placeholder="请输入" />)}
-      </FormItem>
-      <FormItem {...formItemLayout} label="父组织">
-        {form.getFieldDecorator('parentOrgId', {
-          rules: [{ required: true, message: '请选择一个组织!' }],
-        })(
-          <TreeSelect
-            allowClear
-            style={{ width: 300 }}
-            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-            treeData={selectMenuTree}
-            placeholder="请选择一个菜单"
-          />
-        )}
-      </FormItem>
-      <FormItem {...formItemLayout} label="描述">
-        {form.getFieldDecorator('desc', {
-          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
-        })(<Input placeholder="请输入" />)}
-      </FormItem>
-    </div>
-  );
-});
-
+@Form.create()
 @connect(({ menu }) => ({
   menu,
   treeData:menu.treeData,
@@ -69,8 +15,7 @@ const CreateForm = Form.create()(props => {
 }))
 class Menu extends PureComponent{
 
-  state = {
-  }
+  state = { visible: false };
 
   componentDidMount(){
     /**
@@ -119,20 +64,282 @@ class Menu extends PureComponent{
     });
   }
 
+  add = () => {
+    const { form } = this.props;
+    // can use data-binding to get
+    const keys = form.getFieldValue('keys');
+    const nextKeys = keys.concat(uuid);
+    uuid++;
+    // can use data-binding to set
+    // important! notify form to detect changes
+    form.setFieldsValue({
+      keys: nextKeys,
+    });
+  }
+
+  remove = (k) => {
+    const { form } = this.props;
+    // can use data-binding to get
+    const keys = form.getFieldValue('keys');
+    // We need at least one passenger
+    if (keys.length === 1) {
+      return;
+    }
+
+    // can use data-binding to set
+    form.setFieldsValue({
+      keys: keys.filter(key => key !== k),
+    });
+  }
+
+  showDrawer = () => {
+    this.setState({
+      visible: true,
+    });
+  };
+
+  onClose = () => {
+    this.setState({
+      visible: false,
+    });
+  };
+
   render(){
     const {treeData} = this.props;
+
+    const { submitting } = this.props;
+    const {
+      form: { getFieldDecorator,getFieldValue },
+    } = this.props;
+
+    const formItemLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 7 },
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 12 },
+        md: { span: 10 },
+      },
+    };
+
+    const formItemLayoutWithOutLabel = {
+      wrapperCol: {
+        xs: { span: 24, offset: 0 },
+        sm: { span: 18, offset: 6 },
+      },
+    };
+
+    const submitFormLayout = {
+      wrapperCol: {
+        xs: { span: 24, offset: 0 },
+        sm: { span: 10, offset: 7 },
+      },
+    };
+
+    getFieldDecorator('keys', { initialValue: [] });
+
+    const keys = getFieldValue('keys');
+
+    const formItems = keys.map((k, index) => {
+      return (
+        <FormItem
+          {...(index === 0 ? formItemLayout : formItemLayoutWithOutLabel)}
+          label={index === 0 ? '按钮' : ''}
+          required={false}
+          key={k}
+        >
+          {getFieldDecorator(`names[${k}]`, {
+            validateTrigger: ['onChange', 'onBlur'],
+            rules: [{
+              required: true,
+              whitespace: true,
+              message: "请输入按钮的key-name或者删除这个输入框。",
+            }],
+          })(
+            <Input placeholder="key-name" style={{ width: '60%', marginRight: 8 }} />
+          )}
+          {keys.length > 1 ? (
+            <Icon
+              className={styles["dynamic-delete-button"]}
+              type="minus-circle-o"
+              disabled={keys.length === 1}
+              onClick={() => this.remove(k)}
+            />
+          ) : null}
+        </FormItem>
+      );
+    });
+
     return (
       <Row gutter={10}>
-        <Col lg={8} md={24}>
-          <Card title="菜单树" bordered={false}>
+        <Col lg={6} md={24}>
+          <Card bordered={false}>
+
             <Tree onRightClick={(event) => this.handleRightClick(event)}>
               {this.renderTreeNodes(treeData)}
             </Tree>
           </Card>
         </Col>
         <Col lg={16} md={24}>
-          <Card title="菜单表单" bordered={false}>
-            <CreateForm />
+          <Card bordered={false}>
+            <Button type="primary" onClick={this.showDrawer}>新增菜单</Button>
+            <Drawer
+              title="新增菜单"
+              width={720}
+              placement="right"
+              onClose={this.onClose}
+              maskClosable={false}
+              visible={this.state.visible}
+              style={{
+                height: 'calc(100% - 55px)',
+                overflow: 'auto',
+                paddingBottom: 53,
+              }}
+            >
+              <Form onSubmit={this.handleSubmit} style={{ marginTop: 8 }}>
+                <FormItem {...formItemLayout} label="菜单编号">
+                  {getFieldDecorator('menuId', {
+                    rules: [
+                      {
+                        required: true,
+                        message: '请输入菜单编号',
+                      },
+                    ],
+                  })(<Input placeholder="菜单编号为数字格式" />)}
+                </FormItem>
+                <FormItem {...formItemLayout} label="菜单名称">
+                  {getFieldDecorator('menuName', {
+                    rules: [
+                      {
+                        required: true,
+                        message: '请输入菜单名称',
+                      },
+                    ],
+                  })(<Input placeholder="菜单名称" />)}
+                </FormItem>
+                <FormItem {...formItemLayout} label="父菜单">
+                  {getFieldDecorator('pId', {
+                    rules: [
+                      { required: true,
+                        message: '请选择一个菜单!'
+                      }
+                    ],
+                  })(
+                    <TreeSelect
+                      style={{ width: 300 }}
+                      dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                      treeData={treeData}
+                      placeholder="请选择一个菜单"
+                    />
+                  )}
+                </FormItem>
+                <FormItem {...formItemLayout} label="菜单路径">
+                  {getFieldDecorator('path', {
+                    rules: [
+                      {
+                        required: true,
+                        message: '请输入菜单路径',
+                      },
+                    ],
+                  })(<Input placeholder="菜单路径" />)}
+                </FormItem>
+                <FormItem {...formItemLayout} label="菜单图标">
+                  {getFieldDecorator('icon', {
+                    rules: [
+                      {
+                        required: true,
+                        message: '请输入菜单图标',
+                      },
+                    ],
+                  })(<Input placeholder="菜单图标" />)}
+                </FormItem>
+                {formItems}
+                <FormItem {...formItemLayoutWithOutLabel}>
+                  <Button type="dashed" onClick={this.add} style={{ width: '60%' }}>
+                    <Icon type="plus" /> 添加按钮信息
+                  </Button>
+                </FormItem>
+                <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
+                  <Button type="primary" htmlType="submit" loading={submitting}>
+                    新增
+                  </Button>
+                  <Button style={{ marginLeft: 8 }}>保存</Button>
+                </FormItem>
+              </Form>
+            </Drawer>
+            <Divider dashed />
+            <Form onSubmit={this.handleSubmit} style={{ marginTop: 8 }}>
+              <FormItem {...formItemLayout} label="菜单编号">
+                {getFieldDecorator('menuId', {
+                  rules: [
+                    {
+                      required: true,
+                      message: '请输入菜单编号',
+                    },
+                  ],
+                })(<Input placeholder="菜单编号为数字格式" />)}
+              </FormItem>
+              <FormItem {...formItemLayout} label="菜单名称">
+                {getFieldDecorator('menuName', {
+                  rules: [
+                    {
+                      required: true,
+                      message: '请输入菜单名称',
+                    },
+                  ],
+                })(<Input placeholder="菜单名称" />)}
+              </FormItem>
+              <FormItem {...formItemLayout} label="父菜单">
+                {getFieldDecorator('pId', {
+                  rules: [
+                      { required: true,
+                        message: '请选择一个菜单!'
+                      }
+                    ],
+                })(
+                  <TreeSelect
+                    style={{ width: 300 }}
+                    dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                    treeData={treeData}
+                    placeholder="请选择一个菜单"
+                  />
+                )}
+              </FormItem>
+              <FormItem {...formItemLayout} label="菜单路径">
+                {getFieldDecorator('path', {
+                  rules: [
+                    {
+                      required: true,
+                      message: '请输入菜单路径',
+                    },
+                  ],
+                })(<Input placeholder="菜单路径" />)}
+              </FormItem>
+              <FormItem {...formItemLayout} label="菜单图标">
+                {getFieldDecorator('icon', {
+                  rules: [
+                    {
+                      required: true,
+                      message: '请输入菜单图标',
+                    },
+                  ],
+                })(<Input placeholder="菜单图标" />)}
+              </FormItem>
+              {formItems}
+              <FormItem {...formItemLayoutWithOutLabel}>
+                <Button type="dashed" onClick={this.add} style={{ width: '60%' }}>
+                  <Icon type="plus" /> 添加按钮信息
+                </Button>
+              </FormItem>
+              <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
+                <Button type="primary" htmlType="submit" loading={submitting}>
+                  提交
+                </Button>
+                <Button style={{ marginLeft: 8 }}>删除</Button>
+              </FormItem>
+            </Form>
           </Card>
         </Col>
       </Row>
