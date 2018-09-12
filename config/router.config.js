@@ -13,6 +13,7 @@ export default [
     path: '/',
     component: '../layouts/BasicLayout',
     Routes: ['src/pages/Authorized'],
+    authority: ['admin', 'user'],
     routes: [
       // 默认访问根路径跳转到登录页面路由
       { path: '/', redirect: '/user' },
@@ -90,6 +91,7 @@ export default [
           {
             path: '/form/advanced-form',
             name: 'advancedform',
+            authority: ['admin'],
             component: './Forms/AdvancedForm',
           },
         ],
@@ -157,6 +159,7 @@ export default [
           {
             path: '/profile/advanced',
             name: 'advanced',
+            authority: ['admin'],
             component: './Profile/AdvancedProfile',
           },
         ],

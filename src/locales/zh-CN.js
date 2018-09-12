@@ -36,6 +36,7 @@ export default {
   'menu.account': '个人页',
   'menu.account.center': '个人中心',
   'menu.account.settings': '个人设置',
+  'menu.account.trigger': '触发报错',
   'menu.account.logout': '退出登录',
   'app.home.introduce': '介绍',
   'app.analysis.test': '工专路 {no} 号店',
