@@ -700,3 +700,14 @@ https://ant.design/components/table-cn/#components-table-demo-edit-cell
 编辑菜单：表格末尾列操作
 
 删除菜单： 表格末尾列操作，不提供批量失效的功能
+
+2018年09月13日23:21:02 问题记录
+
+$ git clone https://github.com/ant-design/ant-design-pro.git --depth=1
+
+导致push到另外一个仓库的时候一直报如下错误：
+
+一直提示 ! [remote rejected] master -> master (shallow update not allowed)
+
+执行git fetch --unshallow origin后
+重新git push -u github origin即可
