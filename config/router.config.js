@@ -38,6 +38,11 @@ export default [
             component: './System/Org',
           },
           {
+            path: '/system/user',
+            name: 'user',
+            component: './System/User',
+          },
+          {
             path: '/system/menu',
             name: 'menu',
             component: './System/Menu',

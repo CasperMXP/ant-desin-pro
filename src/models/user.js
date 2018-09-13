@@ -1,4 +1,4 @@
-import { queryCurrent, queryUsers } from '@/services/user';
+import {addUser, queryCurrent, queryUsers, removeUser, resetPassword, updateUser, validUser} from '@/services/user';
 
 export default {
 
@@ -6,7 +6,10 @@ export default {
 
   state: {
     currentUser: {},
-    users: [],
+    data: {
+      list: [],
+      pagination: {},
+    },
   },
 
   effects: {
@@ -24,6 +27,58 @@ export default {
         payload: response,
       });
     },
+    *add({ payload }, { call,put }) {
+      yield call(addUser, payload.desc);
+      /**
+       * 新增成功后刷新页面
+       */
+      const response = yield call(queryUsers,payload);
+      yield put({
+        type: 'save',
+        payload: response,
+      });
+    },
+    *update({ payload }, { call,put }) {
+      yield call(updateUser, payload.desc);
+      /**
+       * 新增成功后刷新表格
+       */
+      const response = yield call(queryUsers,payload);
+      yield put({
+        type: 'save',
+        payload: response,
+      });
+    },
+    *remove({ payload, callback }, { call, put }) {
+      yield call(removeUser, payload);
+      if (callback) callback();
+      /**
+       * 删除成功后刷新表格
+       */
+      const response = yield call(queryUsers,payload);
+      yield put({
+        type: 'save',
+        payload: response,
+      });
+    },
+    *valid({ payload, callback }, { call, put }) {
+      yield call(validUser, payload);
+      if (callback) callback();
+      /**
+       * 设置有效成功后刷新表格
+       */
+      const response = yield call(queryUsers,payload);
+      yield put({
+        type: 'save',
+        payload: response,
+      });
+    },
+    *resetPassword({ payload, callback }, { call }) {
+      yield call(resetPassword, payload);
+      if (callback) callback();
+    },
+
+
   },
 
   reducers: {
@@ -36,7 +91,7 @@ export default {
     save(state, action) {
       return {
         ...state,
-        users: action.payload.data.list,
+        data: action.payload.data,
       };
     },
   },
