@@ -1,14 +1,14 @@
 import React from 'react';
-import {Layout} from 'antd';
+import { Layout } from 'antd';
 import DocumentTitle from 'react-document-title';
 import isEqual from 'lodash/isEqual';
 import memoizeOne from 'memoize-one';
-import {connect} from 'dva';
-import {ContainerQuery} from 'react-container-query';
+import { connect } from 'dva';
+import { ContainerQuery } from 'react-container-query';
 import classNames from 'classnames';
 import pathToRegexp from 'path-to-regexp';
-import {enquireScreen, unenquireScreen} from 'enquire-js';
-import {formatMessage} from 'umi/locale';
+import { enquireScreen, unenquireScreen } from 'enquire-js';
+import { formatMessage } from 'umi/locale';
 import SiderMenu from '@/components/SiderMenu';
 import Authorized from '@/utils/Authorized';
 import SettingDrawer from '@/components/SettingDrawer';
@@ -62,15 +62,15 @@ class BasicLayout extends React.PureComponent {
     const { dispatch } = this.props;
     dispatch({
       type: 'user/fetchCurrent',
-      payload: sessionStorage.getItem("loginName"),
+      payload: sessionStorage.getItem('loginName'),
     });
     dispatch({
       type: 'setting/getSetting',
     });
     dispatch({
       type: 'menu/fetchMenus',
-      payload: sessionStorage.getItem("loginName"),
-    })
+      payload: sessionStorage.getItem('loginName'),
+    });
     this.renderRef = requestAnimationFrame(() => {
       this.setState({
         rendering: false,
@@ -109,7 +109,6 @@ class BasicLayout extends React.PureComponent {
       breadcrumbNameMap: this.breadcrumbNameMap,
     };
   }
-
 
   /**
    * 获取面包屑映射
@@ -176,6 +175,16 @@ class BasicLayout extends React.PureComponent {
     });
   };
 
+  renderSettingDrawer() {
+    // Do show SettingDrawer in production
+    // unless deployed in preview.pro.ant.design as demo
+    const { rendering } = this.state;
+    if ((rendering || process.env.NODE_ENV === 'production') && APP_TYPE !== 'site') {
+      return null;
+    }
+    return <SettingDrawer />;
+  }
+
   render() {
     const {
       navTheme,
@@ -183,7 +192,7 @@ class BasicLayout extends React.PureComponent {
       children,
       location: { pathname },
     } = this.props;
-    const { rendering, isMobile,menuData } = this.state;
+    const { rendering, isMobile, menuData } = this.state;
     const isTop = PropsLayout === 'topmenu';
     const layout = (
       <Layout>
@@ -216,6 +225,7 @@ class BasicLayout extends React.PureComponent {
         </Layout>
       </Layout>
     );
+
     return (
       <React.Fragment>
         <DocumentTitle title={this.getPageTitle(pathname)}>
@@ -227,15 +237,13 @@ class BasicLayout extends React.PureComponent {
             )}
           </ContainerQuery>
         </DocumentTitle>
-        {(rendering || process.env.NODE_ENV === 'production') ? null : ( // Do show SettingDrawer in production
-          <SettingDrawer />
-        )}
+        {this.renderSettingDrawer()}
       </React.Fragment>
     );
   }
 }
 
-export default connect(({ global, setting ,menu}) => ({
+export default connect(({ global, setting, menu }) => ({
   collapsed: global.collapsed,
   layout: setting.layout,
   ...setting,
