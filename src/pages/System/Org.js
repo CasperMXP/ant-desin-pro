@@ -1,5 +1,5 @@
-import React, { Fragment, PureComponent } from 'react';
-import { connect } from 'dva';
+import React, {Fragment, PureComponent} from 'react';
+import {connect} from 'dva';
 import {
   Badge,
   Button,
@@ -14,6 +14,7 @@ import {
   Row,
   Select,
   Steps,
+  Tree,
   TreeSelect,
 } from 'antd';
 import StandardTable from '@/components/StandardTable';
@@ -25,6 +26,7 @@ const statusMap = ['1', '0'];
 const status = ['无效', '有效'];
 
 const FormItem = Form.Item;
+const {TreeNode} = Tree;
 const { Step } = Steps;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -69,12 +71,12 @@ const CreateForm = Form.create()(props => {
     >
       <FormItem {...formItemLayout} label="组织编号">
         {form.getFieldDecorator('orgId', {
-          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
+          rules: [{ required: true, message: '请输入至少五个字符的规则描述！'}],
         })(<Input placeholder="请输入" />)}
       </FormItem>
       <FormItem {...formItemLayout} label="组织名称">
         {form.getFieldDecorator('orgName', {
-          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
+          rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入" />)}
       </FormItem>
       <FormItem {...formItemLayout} label="父组织">
@@ -92,7 +94,7 @@ const CreateForm = Form.create()(props => {
       </FormItem>
       <FormItem {...formItemLayout} label="描述">
         {form.getFieldDecorator('desc', {
-          rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
+          rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入" />)}
       </FormItem>
     </Modal>
@@ -354,16 +356,16 @@ class Org extends PureComponent {
         return <Badge status={statusMap[val]} text={status[val]} />;
       },
     },
-    {
-      title: '创建人',
-      dataIndex: 'creatorName',
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createTime',
-      sorter: true,
-      render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
-    },
+    // {
+    //   title: '创建人',
+    //   dataIndex: 'creatorName',
+    // },
+    // {
+    //   title: '创建时间',
+    //   dataIndex: 'createTime',
+    //   sorter: true,
+    //   render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
+    // },
     {
       title: '最近更新人',
       dataIndex: 'lastUpdateBy',
@@ -396,6 +398,35 @@ class Org extends PureComponent {
     });
     dispatch({
       type: 'org/fetchOrgTree',
+    });
+  }
+
+  renderTreeNodes = (data) =>
+    data.map((item) => {
+      if (item.children) {
+        return (
+          <TreeNode title={item.title} key={item.key} dataRef={item}>
+            {this.renderTreeNodes(item.children)}
+          </TreeNode>
+        );
+      }
+      return <TreeNode {...item} dataRef={item} />;
+    });
+
+  /**
+   * 处理组织树的选择事件，选择节点后，刷新右边表格数据为当前节点和它的一级子节点数据
+   * @param event
+   */
+  handleSelectTree = (event) => {
+    const { dispatch } = this.props;
+    const pageInfo = {
+      pageSize: 10,
+      current: 1,
+      orgId: event[0],
+    };
+    dispatch({
+      type: 'org/fetch',
+      payload: pageInfo,
     });
   }
 
@@ -580,38 +611,45 @@ class Org extends PureComponent {
       handleUpdate: this.handleUpdate,
     };
     return (
-      <PageHeaderWrapper title="组织表格">
-        <Card bordered={false}>
-          <div className={styles.tableList}>
-            <div className={styles.tableListForm}>{this.renderSimpleForm()}</div>
-            <div className={styles.tableListOperator}>
-              <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
-                新建
-              </Button>
-              {selectedRows.length > 0 && (
-                <span>
-                  <Button onClick={this.handleDeleteClick}>批量失效</Button>
-                </span>
-              )}
-            </div>
-            <StandardTable
-              selectedRows={selectedRows}
-              loading={loading}
-              data={data}
-              columns={this.columns}
-              onSelectRow={this.handleSelectRows}
-              onChange={this.handleStandardTableChange}
-            />
-          </div>
-        </Card>
-        <CreateForm {...parentMethods} modalVisible={modalVisible} orgTree={orgTree} />
-        {stepFormValues && Object.keys(stepFormValues).length ? (
-          <UpdateForm
-            {...updateMethods}
-            updateModalVisible={updateModalVisible}
-            values={stepFormValues}
-          />
-        ) : null}
+      <PageHeaderWrapper>
+        <Row gutter={5}>
+          <Col lg={6} md={24}>
+            <Card bordered={false}>
+              <Tree onSelect={(event) => this.handleSelectTree(event)}>
+                {this.renderTreeNodes(orgTree)}
+              </Tree>
+            </Card>
+          </Col>
+          <Col lg={18} md={24}>
+            <Card bordered={false}>
+              <div className={styles.tableList}>
+                <div className={styles.tableListForm}>{this.renderSimpleForm()}</div>
+                <div className={styles.tableListOperator}>
+                  <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
+                    新建
+                  </Button>
+                  {selectedRows.length > 0 && (
+                    <span>
+                      <Button onClick={this.handleDeleteClick}>批量失效</Button>
+                    </span>
+                  )}
+                </div>
+                <StandardTable
+                  selectedRows={selectedRows}
+                  loading={loading}
+                  data={data}
+                  columns={this.columns}
+                  onSelectRow={this.handleSelectRows}
+                  onChange={this.handleStandardTableChange}
+                />
+              </div>
+            </Card>
+            <CreateForm {...parentMethods} modalVisible={modalVisible} orgTree={orgTree} />
+            {stepFormValues && Object.keys(stepFormValues).length ? (
+              <UpdateForm {...updateMethods} updateModalVisible={updateModalVisible} values={stepFormValues} />
+            ) : null}
+          </Col>
+        </Row>
       </PageHeaderWrapper>
     );
   }
