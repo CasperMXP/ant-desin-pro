@@ -1,4 +1,4 @@
-import {addOrg, queryOrg, queryOrgTree, removeOrg, updateOrg} from '@/services/org';
+import { addOrg, queryOrg, queryOrgTree, removeOrg, updateOrg } from '@/services/org';
 
 /**
  * 参考文档 https://dvajs.com/api/#model
@@ -44,18 +44,20 @@ export default {
         payload: response,
       });
     },
-    *remove({ payload, callback }, { call, put }) {
-      const response = yield call(removeOrg, payload);
-      yield put({
-        type: 'save',
-        payload: response,
-      });
-      if (callback) callback();
-
+    *remove({ payload }, { call, put }) {
+      yield call(removeOrg, payload);
       const orgTableResponse = yield call(queryOrg, payload);
       yield put({
         type: 'save',
         payload: orgTableResponse,
+      });
+      /**
+       * 删除成功后刷新表格
+       */
+      const response = yield call(queryOrg, payload);
+      yield put({
+        type: 'save',
+        payload: response,
       });
       /**
        * 删除后刷新新增是下拉选择组织机构树
