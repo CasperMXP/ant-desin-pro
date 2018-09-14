@@ -22,20 +22,20 @@ export async function removeOrg(params) {
 
 export async function addOrg(params) {
   return requestWithToken('/api/org', {
-    method: 'PUT',
+    method: 'POST',
     body: {
       ...params,
-      method: 'PUT',
+      method: 'POST',
     },
   });
 }
 
 export async function updateOrg(params) {
   return requestWithToken('/api/org', {
-    method: 'POST',
+    method: 'PUT',
     body: {
       ...params,
-      method: 'update',
+      method: 'put',
     },
   });
 }

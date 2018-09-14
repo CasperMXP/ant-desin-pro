@@ -41,7 +41,7 @@ export default {
     *update({ payload }, { call,put }) {
       yield call(updateUser, payload.desc);
       /**
-       * 新增成功后刷新表格
+       * 更新成功后刷新表格
        */
       const response = yield call(queryUsers,payload);
       yield put({
