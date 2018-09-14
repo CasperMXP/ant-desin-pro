@@ -329,8 +329,8 @@ class User extends PureComponent {
       dataIndex: 'email',
     },
     {
-      title: '机构',
-      dataIndex: 'orgName',
+      title: '组织全称',
+      dataIndex: 'orgFullName',
     },
     // {
     //   title: '登录方式',

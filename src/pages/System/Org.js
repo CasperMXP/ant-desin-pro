@@ -332,6 +332,10 @@ class Org extends PureComponent {
       dataIndex: 'orgName',
     },
     {
+      title: '组织全称',
+      dataIndex: 'orgFullName',
+    },
+    {
       title: '父组织ID',
       dataIndex: 'pid',
     },
