@@ -1,4 +1,4 @@
-import { addOrg, queryOrg, queryOrgTree, removeOrg, updateOrg } from '@/services/org';
+import { addOrg, queryOrg, queryOrgTree, changeValidFlag, updateOrg } from '@/services/org';
 
 /**
  * 参考文档 https://dvajs.com/api/#model
@@ -44,8 +44,8 @@ export default {
         payload: response,
       });
     },
-    *remove({ payload }, { call, put }) {
-      yield call(removeOrg, payload);
+    *changeValidFlag({ payload }, { call, put }) {
+      yield call(changeValidFlag, payload);
       const orgTableResponse = yield call(queryOrg, payload);
       yield put({
         type: 'save',

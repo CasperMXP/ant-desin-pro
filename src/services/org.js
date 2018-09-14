@@ -10,10 +10,11 @@ export async function queryOrg(params) {
   });
 }
 
-export async function removeOrg(orgId) {
-  return requestWithToken(`/api/org/${orgId}`, {
+export async function changeValidFlag(params) {
+  return requestWithToken('/api/org/', {
     method: 'DELETE',
     body: {
+      ...params,
       method: 'delete',
     },
   });

@@ -1,19 +1,6 @@
-import React, { Fragment, PureComponent } from 'react';
-import { connect } from 'dva';
-import {
-  Badge,
-  Button,
-  Card,
-  Col,
-  Divider,
-  Form,
-  Input,
-  message,
-  Modal,
-  Row,
-  Tree,
-  TreeSelect,
-} from 'antd';
+import React, {Fragment, PureComponent} from 'react';
+import {connect} from 'dva';
+import {Badge, Button, Card, Col, Divider, Form, Input, message, Modal, Row, Tooltip, Tree, TreeSelect,} from 'antd';
 import StandardTable from '@/components/StandardTable';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import moment from 'moment';
@@ -21,6 +8,7 @@ import styles from '../List/TableList.less';
 
 const statusMap = ['1', '0'];
 const status = ['无效', '有效'];
+const statusBtn = ['有效', '无效'];
 
 const FormItem = Form.Item;
 const { TreeNode } = Tree;
@@ -235,6 +223,7 @@ class Org extends PureComponent {
     },
     {
       title: '操作',
+      align: 'center',
       render: (text, record) => (
         <Fragment>
           <Button
@@ -243,7 +232,13 @@ class Org extends PureComponent {
             onClick={() => this.handleUpdateModalVisible(true, record)}
           />
           <Divider type="vertical" />
-          <Button icon="delete" type="danger" onClick={() => this.handleDeleteOrg(record)} />
+          <Tooltip title={record.validFlag ===1 ? "设置无效" : "设置有效"}>
+            <Button
+              type={record.validFlag ===1 ? "danger" : "primary"}
+              icon={record.validFlag ===1 ? "close" : "check"}
+              onClick={() => this.handleChangeOrgValidFlag(record)}
+            />
+          </Tooltip>
         </Fragment>
       ),
     },
@@ -408,28 +403,39 @@ class Org extends PureComponent {
    * 删除组织
    * @param orgId
    */
-  handleDeleteOrgByOrgId = orgId => {
+  handleChangeValidFlagByOrgId = (orgId,validFlag) => {
+    const params = {
+      id: orgId,
+      valid: validFlag,
+    }
     const { dispatch } = this.props;
     dispatch({
-      type: 'org/remove',
-      payload: orgId,
+      type: 'org/changeValidFlag',
+      payload: params,
     });
   };
 
-  /**
-   * 删除组织模态框
-   * @param record
-   */
-  handleDeleteOrg = record => {
-    const { orgName, orgId } = record;
-    Modal.confirm({
-      title: '确认删除【'.concat(orgName).concat('】嘛?'),
-      content: '删除【 '.concat(orgName).concat('】将删除该组织的子组织和人员信息！！！'),
-      okText: '删除',
-      cancelText: '取消',
-      okType: 'danger',
-      onOk: () => this.handleDeleteOrgByOrgId(orgId),
-    });
+  handleChangeOrgValidFlag = record => {
+    const { orgName, orgId, validFlag } = record;
+    if(validFlag === 1){
+      Modal.confirm({
+        title: '确认设置无效【'.concat(orgName).concat('】嘛?'),
+        content: '设置无效【 '.concat(orgName).concat('】将该组织的子组织和人员信息设置无效！！！'),
+        okText: '确定',
+        cancelText: '取消',
+        okType: 'danger',
+        onOk: () => this.handleChangeValidFlagByOrgId(orgId,validFlag),
+      });
+    }else{
+      Modal.confirm({
+        title: '确认设置有效【'.concat(orgName).concat('】嘛?'),
+        content: '设置有效【 '.concat(orgName).concat('】将该组织的子组织和人员信息设置有效！！！'),
+        okText: '确定',
+        cancelText: '取消',
+        okType: 'danger',
+        onOk: () => this.handleChangeValidFlagByOrgId(orgId,validFlag),
+      });
+    }
   };
 
   /**
