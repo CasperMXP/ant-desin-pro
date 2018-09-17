@@ -42,6 +42,12 @@ export async function addMenu(params) {
   });
 }
 
-export async function queryButtonsByMenuId(menuId) {
-  return requestWithToken(`/api/menus/${menuId}`);
+export async function updateMenuOrButtons(params) {
+  return requestWithToken('/api/menu', {
+    method: 'PUT',
+    body: {
+      ...params,
+      method: 'put',
+    },
+  });
 }

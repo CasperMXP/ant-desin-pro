@@ -5,7 +5,7 @@ import {
   removeMenuByMenuId,
   queryMenu,
   addMenu,
-  queryButtonsByMenuId,
+  updateMenuOrButtons,
 } from '@/services/menu';
 
 /**
@@ -83,11 +83,15 @@ export default {
         payload: response,
       });
     },
-    *getButtonsByMenuId({ payload }, { call, put }) {
-      const buttonsResponse = yield call(queryButtonsByMenuId, payload);
+    *update({ payload }, { call, put }) {
+      yield call(updateMenuOrButtons, payload);
+      /**
+       * 新增后刷新表格数据
+       */
+      const response = yield call(queryMenu);
       yield put({
-        type: 'saveButtons',
-        payload: buttonsResponse,
+        type: 'saveTableData',
+        payload: response,
       });
     },
   },
@@ -117,12 +121,6 @@ export default {
       return {
         ...state,
         data: action.payload.data,
-      };
-    },
-    saveButtons(state, action) {
-      return {
-        ...state,
-        buttons: action.payload.data,
       };
     },
   },

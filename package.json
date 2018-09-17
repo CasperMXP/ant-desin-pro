@@ -49,7 +49,6 @@
     "react-document-title": "^2.0.3",
     "react-dom": "^16.4.2",
     "react-fittext": "^1.0.0",
-    "react-icons": "^3.0.5",
     "react-router-config": "^1.0.0-beta.4",
     "react-router-dom": "^4.3.1"
   },

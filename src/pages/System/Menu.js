@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   Col,
-  Divider,
   Form,
   Input,
   message,
@@ -27,8 +26,6 @@ const status = ['无效', '有效'];
 const FormItem = Form.Item;
 const { TreeNode } = Tree;
 
-const tableData = [];
-
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -49,7 +46,7 @@ const getValue = obj =>
  * @type {React.ComponentClass<RcBaseFormProps & Omit<FormComponentProps, keyof FormComponentProps>>}
  */
 const CreateMenuForm = Form.create()(props => {
-  const { modalVisible, form, handleAdd, handleModalVisible, orgTree } = props;
+  const { modalVisible, form, handleAdd, handleModalVisible, orgTree, buttons } = props;
   const okHandle = () => {
     form.validateFields((err, fieldsValue) => {
       if (err) return;
@@ -101,7 +98,7 @@ const CreateMenuForm = Form.create()(props => {
       </FormItem>
       <FormItem {...formItemLayout} label="按钮">
         {form.getFieldDecorator('buttons', {
-          initialValue: tableData,
+          initialValue: buttons,
         })(<BtnTableForm />)}
       </FormItem>
     </Modal>
@@ -119,8 +116,10 @@ const UpdateMenuForm = Form.create()(props => {
     updateModalVisible,
     editMenuRecord,
     handleUpdateModalVisible,
+    buttons,
     orgTree,
   } = props;
+
   const okHandle = () => {
     form.validateFields((err, fieldsValue) => {
       if (err) return;
@@ -132,6 +131,7 @@ const UpdateMenuForm = Form.create()(props => {
   return (
     <Modal
       destroyOnClose
+      maskClosable={false}
       title="更新菜单"
       visible={updateModalVisible}
       onOk={okHandle}
@@ -190,6 +190,7 @@ const UpdateMenuForm = Form.create()(props => {
   treeData: menu.treeData,
   menuChildren: menu.menuChildren,
   loading: loading.models.menu,
+  buttons: menu.buttons,
 }))
 class Menu extends PureComponent {
   state = {
@@ -198,6 +199,7 @@ class Menu extends PureComponent {
     selectedRows: [],
     formValues: {},
     editMenuRecord: {},
+    buttons: [],
   };
 
   /**
@@ -279,7 +281,6 @@ class Menu extends PureComponent {
             type="primary"
             onClick={() => this.handleUpdateModalVisible(true, record)}
           />
-          <Divider type="vertical" />
           <Tooltip title={record.validFlag === 1 ? '设置无效' : '设置有效'}>
             <Button
               type={record.validFlag === 1 ? 'danger' : 'primary'}
@@ -424,13 +425,6 @@ class Menu extends PureComponent {
    * @param record
    */
   handleUpdateModalVisible = (flag, record) => {
-    /**
-     * 根据当前菜单id查询按钮
-     */
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'menu/getButtonsByMenuId',
-    });
     this.setState({
       updateModalVisible: !!flag,
       editMenuRecord: record || {},
@@ -503,7 +497,7 @@ class Menu extends PureComponent {
   handleUpdate = fields => {
     const { dispatch } = this.props;
     dispatch({
-      type: 'org/update',
+      type: 'menu/update',
       payload: {
         desc: fields,
       },
@@ -572,7 +566,7 @@ class Menu extends PureComponent {
       loading,
     } = this.props;
 
-    const { selectedRows, modalVisible, updateModalVisible, editMenuRecord } = this.state;
+    const { selectedRows, modalVisible, updateModalVisible, editMenuRecord, buttons } = this.state;
 
     const parentMethods = {
       handleAdd: this.handleAdd,
@@ -625,12 +619,18 @@ class Menu extends PureComponent {
                 />
               </div>
             </Card>
-            <CreateMenuForm {...parentMethods} modalVisible={modalVisible} orgTree={treeData} />
+            <CreateMenuForm
+              {...parentMethods}
+              modalVisible={modalVisible}
+              orgTree={treeData}
+              buttons={buttons}
+            />
             <UpdateMenuForm
               {...updateMethods}
               editMenuRecord={editMenuRecord}
               updateModalVisible={updateModalVisible}
               orgTree={treeData}
+              buttons={buttons}
             />
           </Col>
         </Row>
