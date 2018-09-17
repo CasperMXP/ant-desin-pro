@@ -1,4 +1,4 @@
-import {requestWithToken} from "../utils/request";
+import { requestWithToken } from '../utils/request';
 
 export async function queryMenusByLoginName(loginName) {
   return requestWithToken(`/api/menus/${loginName}`);
@@ -20,4 +20,28 @@ export async function removeMenuByMenuId(params) {
       method: 'delete',
     },
   });
+}
+
+export async function queryMenu(params) {
+  return requestWithToken('/api/menus', {
+    method: 'POST',
+    body: {
+      ...params,
+      method: 'POST',
+    },
+  });
+}
+
+export async function addMenu(params) {
+  return requestWithToken('/api/menu', {
+    method: 'POST',
+    body: {
+      ...params,
+      method: 'POST',
+    },
+  });
+}
+
+export async function queryButtonsByMenuId(menuId) {
+  return requestWithToken(`/api/menus/${menuId}`);
 }
