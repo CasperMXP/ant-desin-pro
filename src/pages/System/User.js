@@ -1,11 +1,12 @@
-import React, {Fragment, PureComponent} from 'react';
-import {connect} from 'dva';
+import React, { Fragment, PureComponent } from 'react';
+import { connect } from 'dva';
 import {
   AutoComplete,
   Badge,
   Button,
   Card,
   Col,
+  Divider,
   Form,
   Icon,
   Input,
@@ -18,14 +19,13 @@ import {
 } from 'antd';
 import StandardTable from '@/components/StandardTable';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import moment from "moment";
+import moment from 'moment';
 import styles from '../List/TableList.less';
-
 
 const validStatusMap = ['0', '1'];
 const validStatus = ['无效', '有效'];
-const adminStatusMap = ['0', '1','2','3']
-const adminStatus = ['普通', '超级','业务','系统'];
+const adminStatusMap = ['0', '1', '2', '3'];
+const adminStatus = ['普通', '超级', '业务', '系统'];
 
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
@@ -49,8 +49,15 @@ const getValue = obj =>
  * @type {React.ComponentClass<RcBaseFormProps & Omit<FormComponentProps, keyof FormComponentProps>>}
  */
 const CreateUserForm = Form.create()(props => {
-
-  const { modalVisible, form, handleAdd, handleChange, handleModalVisible, orgTree,dataSource } = props;
+  const {
+    modalVisible,
+    form,
+    handleAdd,
+    handleChange,
+    handleModalVisible,
+    orgTree,
+    dataSource,
+  } = props;
 
   const okHandle = () => {
     form.validateFields((err, fieldsValue) => {
@@ -75,14 +82,14 @@ const CreateUserForm = Form.create()(props => {
       </FormItem>
       <FormItem
         {...formItemLayout}
-        label={(
+        label={
           <span>
             登录名&nbsp;
             <Tooltip title="登录账户名称，一般为中文名字缩写，且唯一">
               <Icon type="question-circle-o" />
             </Tooltip>
           </span>
-        )}
+        }
       >
         {form.getFieldDecorator('loginName', {
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
@@ -100,14 +107,9 @@ const CreateUserForm = Form.create()(props => {
       </FormItem>
       <FormItem {...formItemLayout} label="邮箱">
         {form.getFieldDecorator('email', {
-          rules: [{ required: true, message: '请输入邮箱！', }],
-        })
-        (
-          <AutoComplete
-            dataSource={dataSource}
-            onChange={handleChange}
-            placeholder="请输入邮箱"
-          >
+          rules: [{ required: true, message: '请输入邮箱！' }],
+        })(
+          <AutoComplete dataSource={dataSource} onChange={handleChange} placeholder="请输入邮箱">
             <Input />
           </AutoComplete>
         )}
@@ -127,7 +129,7 @@ const CreateUserForm = Form.create()(props => {
       </FormItem>
       <FormItem {...formItemLayout} label="管理员标志">
         {form.getFieldDecorator('adminFlag', {
-          rules: [{ required: true, message: '请选择一个',}],
+          rules: [{ required: true, message: '请选择一个' }],
           initialValue: 0,
         })(
           <RadioGroup name="adminFlagRadioGroup">
@@ -144,21 +146,19 @@ const CreateUserForm = Form.create()(props => {
         })(<Input placeholder="请输入" />)}
       </FormItem>
       <FormItem {...formItemLayout} label="登录方式">
-        {form.getFieldDecorator('loginType',
-          {
-            rules: [
-                {
-                  required: true,
-                  message: '请选择一个！'
-                }
-              ],
-            initialValue: 0,
-          }
-          )(
-            <RadioGroup name="loginTypeRadioGroup">
-              <Radio value={0}>账户</Radio>
-              <Radio value={1}>手机</Radio>
-            </RadioGroup>
+        {form.getFieldDecorator('loginType', {
+          rules: [
+            {
+              required: true,
+              message: '请选择一个！',
+            },
+          ],
+          initialValue: 0,
+        })(
+          <RadioGroup name="loginTypeRadioGroup">
+            <Radio value={0}>账户</Radio>
+            <Radio value={1}>手机</Radio>
+          </RadioGroup>
         )}
       </FormItem>
     </Modal>
@@ -169,9 +169,15 @@ const CreateUserForm = Form.create()(props => {
  * 更新用户模态框
  * @type {React.ComponentClass<RcBaseFormProps & Omit<FormComponentProps, keyof FormComponentProps>>}
  */
-const UpdateUserForm = Form.create()(props =>  {
-
-  const { form, handleUpdate,updateModalVisible,editUserRecord,handleUpdateModalVisible,orgTree } = props;
+const UpdateUserForm = Form.create()(props => {
+  const {
+    form,
+    handleUpdate,
+    updateModalVisible,
+    editUserRecord,
+    handleUpdateModalVisible,
+    orgTree,
+  } = props;
   const okHandle = () => {
     form.validateFields((err, fieldsValue) => {
       if (err) return;
@@ -180,7 +186,7 @@ const UpdateUserForm = Form.create()(props =>  {
     });
   };
 
-  return(
+  return (
     <Modal
       destroyOnClose
       title="更新用户"
@@ -195,44 +201,41 @@ const UpdateUserForm = Form.create()(props =>  {
       </FormItem>
       <FormItem
         {...formItemLayout}
-        label={(
+        label={
           <span>
             登录名&nbsp;
             <Tooltip title="登录账户名称，一般为中文名字缩写，且唯一">
               <Icon type="question-circle-o" />
             </Tooltip>
           </span>
-        )}
+        }
       >
         {form.getFieldDecorator('loginName', {
-          initialValue:editUserRecord.loginName,
+          initialValue: editUserRecord.loginName,
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入登录名" />)}
       </FormItem>
       <FormItem {...formItemLayout} label="姓名">
         {form.getFieldDecorator('userName', {
-          initialValue:editUserRecord.userName,
+          initialValue: editUserRecord.userName,
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入姓名" />)}
       </FormItem>
       <FormItem {...formItemLayout} label="手机号">
         {form.getFieldDecorator('phone', {
-          initialValue:editUserRecord.phone,
+          initialValue: editUserRecord.phone,
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入手机号" />)}
       </FormItem>
       <FormItem {...formItemLayout} label="邮箱">
         {form.getFieldDecorator('email', {
-          initialValue:editUserRecord.email,
-          rules: [{ required: true, message: '请输入邮箱！', }],
-        })
-        (
-          <Input />
-        )}
+          initialValue: editUserRecord.email,
+          rules: [{ required: true, message: '请输入邮箱！' }],
+        })(<Input />)}
       </FormItem>
       <FormItem {...formItemLayout} label="组织">
         {form.getFieldDecorator('orgId', {
-          initialValue:editUserRecord.orgName,
+          initialValue: editUserRecord.orgName,
           rules: [{ required: true, message: '请选择一个组织!' }],
         })(
           <TreeSelect
@@ -246,8 +249,8 @@ const UpdateUserForm = Form.create()(props =>  {
       </FormItem>
       <FormItem {...formItemLayout} label="管理员标志">
         {form.getFieldDecorator('adminFlag', {
-          initialValue:editUserRecord.adminFlag,
-          rules: [{ required: true, message: '请选择一个',}],
+          initialValue: editUserRecord.adminFlag,
+          rules: [{ required: true, message: '请选择一个' }],
         })(
           <RadioGroup name="adminFlagRadioGroup">
             <Radio value={0}>普通</Radio>
@@ -259,22 +262,20 @@ const UpdateUserForm = Form.create()(props =>  {
       </FormItem>
       <FormItem {...formItemLayout} label="员工编号">
         {form.getFieldDecorator('userNumber', {
-          initialValue:editUserRecord.userNumber,
+          initialValue: editUserRecord.userNumber,
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！', min: 5 }],
         })(<Input placeholder="请输入" />)}
       </FormItem>
       <FormItem {...formItemLayout} label="登录方式">
-        {form.getFieldDecorator('loginType',
-          {
-            rules: [
-              {
-                required: true,
-                message: '请选择一个！'
-              }
-            ],
-            initialValue: editUserRecord.loginType,
-          }
-        )(
+        {form.getFieldDecorator('loginType', {
+          rules: [
+            {
+              required: true,
+              message: '请选择一个！',
+            },
+          ],
+          initialValue: editUserRecord.loginType,
+        })(
           <RadioGroup name="loginTypeRadioGroup">
             <Radio value={0}>账户</Radio>
             <Radio value={1}>手机</Radio>
@@ -293,7 +294,6 @@ const UpdateUserForm = Form.create()(props =>  {
 }))
 @Form.create()
 class User extends PureComponent {
-
   state = {
     modalVisible: false,
     updateModalVisible: false,
@@ -405,7 +405,19 @@ class User extends PureComponent {
       title: '操作',
       render: (text, record) => (
         <Fragment>
-          <a onClick={() => this.handleUpdateModalVisible(true, record)}>编辑</a>
+          <Button
+            icon="edit"
+            type="primary"
+            onClick={() => this.handleUpdateModalVisible(true, record)}
+          />
+          <Divider type="vertical" />
+          <Tooltip title={record.validFlag === 1 ? '设置无效' : '设置有效'}>
+            <Button
+              type={record.validFlag === 1 ? 'danger' : 'primary'}
+              icon={record.validFlag === 1 ? 'close' : 'check'}
+              onClick={() => this.handleChangeOrgValidFlag(record)}
+            />
+          </Tooltip>
         </Fragment>
       ),
     },
@@ -589,16 +601,14 @@ class User extends PureComponent {
    * 拼接邮箱后缀
    * @param value
    */
-  handleChange = (value) => {
+  handleChange = value => {
     this.setState({
-      dataSource: !value || value.indexOf('@') >= 0 ? [] : [
-        `${value}@xwbank.com`,
-        `${value}@gmail.com`,
-        `${value}@163.com`,
-        `${value}@qq.com`,
-      ],
+      dataSource:
+        !value || value.indexOf('@') >= 0
+          ? []
+          : [`${value}@xwbank.com`, `${value}@gmail.com`, `${value}@163.com`, `${value}@qq.com`],
     });
-  }
+  };
 
   /**
    * 新增用户方法
@@ -639,7 +649,7 @@ class User extends PureComponent {
       form: { getFieldDecorator },
     } = this.props;
 
-    const {dataSource} = this.state
+    const { dataSource } = this.state;
 
     return (
       <Form onSubmit={this.handleSearch} layout="inline">
@@ -659,11 +669,7 @@ class User extends PureComponent {
           </Col>
           <Col md={6} sm={24}>
             <FormItem label="手机号">
-              {getFieldDecorator('phone')(
-                <Input
-                  placeholder="请输入手机号"
-                />
-              )}
+              {getFieldDecorator('phone')(<Input placeholder="请输入手机号" />)}
             </FormItem>
           </Col>
           <Col md={6} sm={24}>
@@ -695,19 +701,24 @@ class User extends PureComponent {
   }
 
   render() {
-
     const {
       user: { data },
       orgTree,
       loading,
     } = this.props;
 
-    const { selectedRows, modalVisible, updateModalVisible ,dataSource,editUserRecord} = this.state;
+    const {
+      selectedRows,
+      modalVisible,
+      updateModalVisible,
+      dataSource,
+      editUserRecord,
+    } = this.state;
 
     const parentMethods = {
       handleAdd: this.handleAdd,
       handleModalVisible: this.handleModalVisible,
-      handleChange:this.handleChange,
+      handleChange: this.handleChange,
     };
     const updateMethods = {
       handleUpdateModalVisible: this.handleUpdateModalVisible,
@@ -723,15 +734,23 @@ class User extends PureComponent {
               <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
                 新建
               </Button>
-              <Button icon="import" type="primary" onClick={() => this.handleImportUserFromExcel(true)}>
+              <Button
+                icon="import"
+                type="primary"
+                onClick={() => this.handleImportUserFromExcel(true)}
+              >
                 Excel导入
               </Button>
               {selectedRows.length > 0 && (
                 <span>
-                  <Button icon='export' onClick={this.handleExportExcel}>导出Excel</Button>
-                  <Button icon='delete' type="danger" onClick={this.handleDeleteClick}>设置失效</Button>
-                  <Button icon='edit' type="danger" onClick={this.handleUserValidClick}>设置有效</Button>
-                  <Button icon='safety' onClick={this.handleResetPassword}>重置密码</Button>
+                  <Button icon="export" onClick={this.handleExportExcel}>
+                    导出Excel
+                  </Button>
+                  <Tooltip title="统一默认重置用户密码为1">
+                    <Button icon="safety" onClick={this.handleResetPassword}>
+                      重置密码
+                    </Button>
+                  </Tooltip>
                 </span>
               )}
             </div>
@@ -745,8 +764,18 @@ class User extends PureComponent {
             />
           </div>
         </Card>
-        <CreateUserForm {...parentMethods} modalVisible={modalVisible} orgTree={orgTree} dataSource={dataSource} />
-        <UpdateUserForm {...updateMethods} editUserRecord={editUserRecord} updateModalVisible={updateModalVisible} orgTree={orgTree} />
+        <CreateUserForm
+          {...parentMethods}
+          modalVisible={modalVisible}
+          orgTree={orgTree}
+          dataSource={dataSource}
+        />
+        <UpdateUserForm
+          {...updateMethods}
+          editUserRecord={editUserRecord}
+          updateModalVisible={updateModalVisible}
+          orgTree={orgTree}
+        />
       </PageHeaderWrapper>
     );
   }

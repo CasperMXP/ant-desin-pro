@@ -1,6 +1,20 @@
-import React, {Fragment, PureComponent} from 'react';
-import {connect} from 'dva';
-import {Badge, Button, Card, Col, Divider, Form, Input, message, Modal, Row, Tooltip, Tree, TreeSelect,} from 'antd';
+import React, { Fragment, PureComponent } from 'react';
+import { connect } from 'dva';
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Input,
+  message,
+  Modal,
+  Row,
+  Tooltip,
+  Tree,
+  TreeSelect,
+} from 'antd';
 import StandardTable from '@/components/StandardTable';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import moment from 'moment';
@@ -8,7 +22,6 @@ import styles from '../List/TableList.less';
 
 const statusMap = ['1', '0'];
 const status = ['无效', '有效'];
-const statusBtn = ['有效', '无效'];
 
 const FormItem = Form.Item;
 const { TreeNode } = Tree;
@@ -232,10 +245,10 @@ class Org extends PureComponent {
             onClick={() => this.handleUpdateModalVisible(true, record)}
           />
           <Divider type="vertical" />
-          <Tooltip title={record.validFlag ===1 ? "设置无效" : "设置有效"}>
+          <Tooltip title={record.validFlag === 1 ? '设置无效' : '设置有效'}>
             <Button
-              type={record.validFlag ===1 ? "danger" : "primary"}
-              icon={record.validFlag ===1 ? "close" : "check"}
+              type={record.validFlag === 1 ? 'danger' : 'primary'}
+              icon={record.validFlag === 1 ? 'close' : 'check'}
               onClick={() => this.handleChangeOrgValidFlag(record)}
             />
           </Tooltip>
@@ -403,11 +416,11 @@ class Org extends PureComponent {
    * 删除组织
    * @param orgId
    */
-  handleChangeValidFlagByOrgId = (orgId,validFlag) => {
+  handleChangeValidFlagByOrgId = (orgId, validFlag) => {
     const params = {
       id: orgId,
       valid: validFlag,
-    }
+    };
     const { dispatch } = this.props;
     dispatch({
       type: 'org/changeValidFlag',
@@ -415,25 +428,29 @@ class Org extends PureComponent {
     });
   };
 
+  /**
+   * 改变组织的有效状态
+   * @param record
+   */
   handleChangeOrgValidFlag = record => {
     const { orgName, orgId, validFlag } = record;
-    if(validFlag === 1){
+    if (validFlag === 1) {
       Modal.confirm({
         title: '确认设置无效【'.concat(orgName).concat('】嘛?'),
         content: '设置无效【 '.concat(orgName).concat('】将该组织的子组织和人员信息设置无效！！！'),
         okText: '确定',
         cancelText: '取消',
         okType: 'danger',
-        onOk: () => this.handleChangeValidFlagByOrgId(orgId,validFlag),
+        onOk: () => this.handleChangeValidFlagByOrgId(orgId, validFlag),
       });
-    }else{
+    } else {
       Modal.confirm({
         title: '确认设置有效【'.concat(orgName).concat('】嘛?'),
         content: '设置有效【 '.concat(orgName).concat('】将该组织的子组织和人员信息设置有效！！！'),
         okText: '确定',
         cancelText: '取消',
         okType: 'danger',
-        onOk: () => this.handleChangeValidFlagByOrgId(orgId,validFlag),
+        onOk: () => this.handleChangeValidFlagByOrgId(orgId, validFlag),
       });
     }
   };
