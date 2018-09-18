@@ -46,7 +46,7 @@ const getValue = obj =>
  * @type {React.ComponentClass<RcBaseFormProps & Omit<FormComponentProps, keyof FormComponentProps>>}
  */
 const CreateMenuForm = Form.create()(props => {
-  const { modalVisible, form, handleAdd, handleModalVisible, orgTree, buttons } = props;
+  const { modalVisible, form, handleAdd, handleModalVisible, orgTree } = props;
   const okHandle = () => {
     form.validateFields((err, fieldsValue) => {
       if (err) return;
@@ -98,7 +98,7 @@ const CreateMenuForm = Form.create()(props => {
       </FormItem>
       <FormItem {...formItemLayout} label="按钮">
         {form.getFieldDecorator('buttons', {
-          initialValue: buttons,
+          initialValue: [],
         })(<BtnTableForm />)}
       </FormItem>
     </Modal>
@@ -116,7 +116,6 @@ const UpdateMenuForm = Form.create()(props => {
     updateModalVisible,
     editMenuRecord,
     handleUpdateModalVisible,
-    buttons,
     orgTree,
   } = props;
 
@@ -190,7 +189,6 @@ const UpdateMenuForm = Form.create()(props => {
   treeData: menu.treeData,
   menuChildren: menu.menuChildren,
   loading: loading.models.menu,
-  buttons: menu.buttons,
 }))
 class Menu extends PureComponent {
   state = {
@@ -199,7 +197,6 @@ class Menu extends PureComponent {
     selectedRows: [],
     formValues: {},
     editMenuRecord: {},
-    buttons: [],
   };
 
   /**
@@ -566,7 +563,7 @@ class Menu extends PureComponent {
       loading,
     } = this.props;
 
-    const { selectedRows, modalVisible, updateModalVisible, editMenuRecord, buttons } = this.state;
+    const { selectedRows, modalVisible, updateModalVisible, editMenuRecord } = this.state;
 
     const parentMethods = {
       handleAdd: this.handleAdd,
@@ -623,14 +620,12 @@ class Menu extends PureComponent {
               {...parentMethods}
               modalVisible={modalVisible}
               orgTree={treeData}
-              buttons={buttons}
             />
             <UpdateMenuForm
               {...updateMethods}
               editMenuRecord={editMenuRecord}
               updateModalVisible={updateModalVisible}
               orgTree={treeData}
-              buttons={buttons}
             />
           </Col>
         </Row>
