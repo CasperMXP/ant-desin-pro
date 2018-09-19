@@ -1,6 +1,21 @@
-import React, {Fragment, PureComponent} from 'react';
-import {connect} from 'dva';
-import {Badge, Button, Card, Col, Divider, Form, Input, message, Modal, Row, Select, Tooltip, Transfer,} from 'antd';
+import React, { Fragment, PureComponent } from 'react';
+import { connect } from 'dva';
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Input,
+  message,
+  Modal,
+  Row,
+  Select,
+  Tooltip,
+  Transfer,
+  Tree,
+} from 'antd';
 import StandardTable from '@/components/StandardTable';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import styles from '../List/TableList.less';
@@ -9,7 +24,8 @@ const validStatusMap = ['0', '1'];
 const validStatus = ['无效', '有效'];
 
 const FormItem = Form.Item;
-const {Option} = Select;
+const { TreeNode } = Tree;
+const { Option } = Select;
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -60,10 +76,7 @@ const CreateRoleForm = Form.create()(props => {
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入" />)}
       </FormItem>
-      <FormItem
-        {...formItemLayout}
-        label="角色名称"
-      >
+      <FormItem {...formItemLayout} label="角色名称">
         {form.getFieldDecorator('roleName', {
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入" />)}
@@ -71,7 +84,7 @@ const CreateRoleForm = Form.create()(props => {
       <FormItem {...formItemLayout} label="角色类型">
         {form.getFieldDecorator('roleTypeId', {
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
-        })( <Select style={{ width: 120 }}>{renderSelectOptions(roleTypes)}</Select>)}
+        })(<Select style={{ width: 120 }}>{renderSelectOptions(roleTypes)}</Select>)}
       </FormItem>
       <FormItem {...formItemLayout} label="描述">
         {form.getFieldDecorator('description', {
@@ -81,6 +94,7 @@ const CreateRoleForm = Form.create()(props => {
     </Modal>
   );
 });
+
 /**
  * 更新角色模态框
  * @type {React.ComponentClass<RcBaseFormProps & Omit<FormComponentProps, keyof FormComponentProps>>}
@@ -113,28 +127,25 @@ const UpdateRoleForm = Form.create()(props => {
     >
       <FormItem {...formItemLayout} label="角色编号">
         {form.getFieldDecorator('roleId', {
-          initialValue:editRoleRecord.roleId,
+          initialValue: editRoleRecord.roleId,
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入" disabled />)}
       </FormItem>
-      <FormItem
-        {...formItemLayout}
-        label="角色名称"
-      >
+      <FormItem {...formItemLayout} label="角色名称">
         {form.getFieldDecorator('roleName', {
-          initialValue:editRoleRecord.roleName,
+          initialValue: editRoleRecord.roleName,
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入" />)}
       </FormItem>
       <FormItem {...formItemLayout} label="角色类型">
         {form.getFieldDecorator('roleTypeId', {
-          initialValue:editRoleRecord.roleTypeId,
+          initialValue: editRoleRecord.roleTypeId,
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
-        })( <Select style={{ width: 120 }}>{renderSelectOptions(roleTypes)}</Select>)}
+        })(<Select style={{ width: 120 }}>{renderSelectOptions(roleTypes)}</Select>)}
       </FormItem>
       <FormItem {...formItemLayout} label="描述">
         {form.getFieldDecorator('description', {
-          initialValue:editRoleRecord.description,
+          initialValue: editRoleRecord.description,
           rules: [{ required: true, message: '请输入至少五个字符的规则描述！' }],
         })(<Input placeholder="请输入" />)}
       </FormItem>
@@ -143,10 +154,68 @@ const UpdateRoleForm = Form.create()(props => {
 });
 
 /**
- * 角色与菜单按钮资源关联模态框
+ * 角色与菜单资源关联模态框
  */
-const SetRoleResourceForm = Form.create()(props =>{
+const SetRoleResourceForm = Form.create()(props => {
+  const {
+    form,
+    roleRecord,
+    roleMenuModalVisible,
+    handleSetRoleMenu,
+    handleRoleMenuModalVisible,
+    menus,
+  } = props;
 
+  const okHandle = () => {
+    form.validateFields((err, fieldsValue) => {
+      if (err) return;
+      form.resetFields();
+      handleSetRoleMenu(fieldsValue);
+    });
+  };
+
+  const changeTransfer = targetKeys => {
+    roleRecord.menuIds = [...targetKeys];
+  };
+  return (
+    <Modal
+      centered
+      closable={false}
+      maskClosable={false}
+      width={800}
+      title="设置角色关联菜单"
+      visible={roleMenuModalVisible}
+      onOk={okHandle}
+      onCancel={() => handleRoleMenuModalVisible()}
+    >
+      <FormItem {...formItemLayout} label="角色id">
+        {form.getFieldDecorator('roleId', {
+          initialValue: roleRecord.roleId,
+        })(<Input disabled />)}
+      </FormItem>
+      <FormItem {...formItemLayout} label="角色名称">
+        {form.getFieldDecorator('roleName', {
+          initialValue: roleRecord.roleName,
+        })(<Input disabled />)}
+      </FormItem>
+      <FormItem {...formItemLayout}>
+        {form.getFieldDecorator('menuIds', {})(
+          <Transfer
+            dataSource={menus}
+            showSearch
+            titles={['可关联菜单', '已关联菜单']}
+            listStyle={{
+              width: 270,
+              height: 400,
+            }}
+            targetKeys={roleRecord.menuIds}
+            render={item => item.title}
+            onChange={changeTransfer}
+          />
+        )}
+      </FormItem>
+    </Modal>
+  );
 });
 
 /**
@@ -154,7 +223,6 @@ const SetRoleResourceForm = Form.create()(props =>{
  * @type {React.ComponentClass<RcBaseFormProps & Omit<FormComponentProps, keyof FormComponentProps>>}
  */
 const SetRoleUserForm = Form.create()(props => {
-
   const {
     form,
     handleSetRoleUser,
@@ -172,9 +240,9 @@ const SetRoleUserForm = Form.create()(props => {
     });
   };
 
-  const changeTransfer = (targetKeys) => {
-    roleRecord.loginNames = [...targetKeys]
-  }
+  const changeTransfer = targetKeys => {
+    roleRecord.loginNames = [...targetKeys];
+  };
 
   return (
     <Modal
@@ -187,51 +255,48 @@ const SetRoleUserForm = Form.create()(props => {
       onOk={okHandle}
       onCancel={() => handleRoleUserModalVisible()}
     >
-      <FormItem
-        {...formItemLayout}
-        label="角色id"
-      >
+      <FormItem {...formItemLayout} label="角色id">
         {form.getFieldDecorator('roleId', {
-          initialValue:roleRecord.roleId,
+          initialValue: roleRecord.roleId,
         })(<Input disabled />)}
       </FormItem>
-
-      <FormItem
-        {...formItemLayout}
-        label="角色名称"
-      >
+      <FormItem {...formItemLayout} label="角色名称">
         {form.getFieldDecorator('roleName', {
-          initialValue:roleRecord.roleName,
+          initialValue: roleRecord.roleName,
         })(<Input disabled />)}
       </FormItem>
       <FormItem>
-        {form.getFieldDecorator('loginNames', {
-        })(
+        {form.getFieldDecorator('loginNames', {})(
           <Transfer
             dataSource={users}
             showSearch
             titles={['可关联人员', '已关联人员']}
             listStyle={{
               width: 250,
-              height: 300,
+              height: 400,
             }}
             targetKeys={roleRecord.loginNames}
-            render={item => item.title + '-' + item.key}
+            render={item =>
+              item.title
+                .toString()
+                .concat('-')
+                .concat(item.key)
+            }
             onChange={changeTransfer}
           />
         )}
       </FormItem>
-
     </Modal>
   );
 });
 
 /* eslint react/no-multi-comp:0 */
-@connect(({ role, loading, user }) => ({
+@connect(({ role, loading, user, menu }) => ({
   role,
   loading: loading.models.role,
   roleTypes: role.roleTypes,
-  users: user.users
+  users: user.users,
+  menus: menu.menus,
 }))
 @Form.create()
 class Role extends PureComponent {
@@ -239,6 +304,7 @@ class Role extends PureComponent {
     modalVisible: false,
     updateModalVisible: false,
     roleUserModalVisible: false,
+    roleMenuModalVisible: false,
     selectedRows: [],
     formValues: {},
     editRoleRecord: {},
@@ -287,9 +353,13 @@ class Role extends PureComponent {
       title: '操作',
       render: (text, record) => (
         <Fragment>
-          <a onClick={() => this.handleUpdateModalVisible(true, record)}>角色资源设置</a>
+          <a onClick={() => this.handleRoleMenuUpdateModalVisible(true, record)}>
+            设置角色关联菜单
+          </a>
           <Divider type="vertical" />
-          <a onClick={() => this.handleRoleUserUpdateModalVisible(true, record)}>角色人员设置</a>
+          <a onClick={() => this.handleRoleUserUpdateModalVisible(true, record)}>
+            设置角色关联人员
+          </a>
           <Divider type="vertical" />
           <a onClick={() => this.handleUpdateModalVisible(true, record)}>编辑</a>
           <Divider type="vertical" />
@@ -313,10 +383,12 @@ class Role extends PureComponent {
       type: 'role/fetchRoleType',
     });
     dispatch({
-      type: 'user/fetchAllUsers'
+      type: 'user/fetchAllUsers',
+    });
+    dispatch({
+      type: 'menu/fetchAllLeafMenu',
     });
   }
-
 
   /**
    * 动态渲染角色类型下拉列表
@@ -324,9 +396,7 @@ class Role extends PureComponent {
    * @returns {*}
    */
   renderSelectOptions = data =>
-    data.map(item =>
-      <Option value={item.roleTypeId}>{item.roleTypeName}</Option>
-    )
+    data.map(item => <Option value={item.roleTypeId}>{item.roleTypeName}</Option>);
 
   /**
    * 处理表格上分页，条件过滤等事件
@@ -481,6 +551,22 @@ class Role extends PureComponent {
     });
   };
 
+  handleRoleMenuUpdateModalVisible = (flag, record) => {
+    this.setState({
+      roleMenuModalVisible: !!flag,
+      roleRecord: record || {},
+    });
+    const { dispatch } = this.props;
+    const pageInfo = {
+      pageSize: 10,
+      current: 1,
+    };
+    dispatch({
+      type: 'role/fetch',
+      payload: pageInfo,
+    });
+  };
+
   /**
    * 新增角色方法
    * @param fields
@@ -527,7 +613,22 @@ class Role extends PureComponent {
       },
     });
     this.handleRoleUserUpdateModalVisible();
-  }
+  };
+
+  /**
+   * 给角色设置菜单
+   * @param fields
+   */
+  handleSetRoleMenu = fields => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'role/setMenus',
+      payload: {
+        desc: fields,
+      },
+    });
+    this.handleRoleMenuUpdateModalVisible();
+  };
 
   renderSimpleForm() {
     const {
@@ -541,9 +642,7 @@ class Role extends PureComponent {
           <Col md={6} sm={24}>
             <FormItem label="角色类型">
               {getFieldDecorator('roleTypeId')(
-                <Select>
-                  {this.renderSelectOptions(roleTypes)}
-                </Select>
+                <Select>{this.renderSelectOptions(roleTypes)}</Select>
               )}
             </FormItem>
           </Col>
@@ -573,6 +672,7 @@ class Role extends PureComponent {
       loading,
       roleTypes,
       users,
+      menus,
     } = this.props;
 
     const {
@@ -582,18 +682,19 @@ class Role extends PureComponent {
       editRoleRecord,
       roleRecord,
       roleUserModalVisible,
+      roleMenuModalVisible,
     } = this.state;
 
     const parentMethods = {
       handleAdd: this.handleAdd,
       handleModalVisible: this.handleModalVisible,
       handleChange: this.handleChange,
-      renderSelectOptions:this.renderSelectOptions,
+      renderSelectOptions: this.renderSelectOptions,
     };
     const updateMethods = {
       handleUpdateModalVisible: this.handleUpdateModalVisible,
       handleUpdate: this.handleUpdate,
-      renderSelectOptions:this.renderSelectOptions,
+      renderSelectOptions: this.renderSelectOptions,
     };
 
     const setRoleUserMethods = {
@@ -601,8 +702,13 @@ class Role extends PureComponent {
       handleSetRoleUser: this.handleSetRoleUser,
     };
 
-    return (
+    const setRoleMenuMethods = {
+      handleRoleMenuModalVisible: this.handleRoleMenuUpdateModalVisible,
+      handleSetRoleMenu: this.handleSetRoleMenu,
+      renderTreeNodes: this.renderTreeNodes,
+    };
 
+    return (
       <PageHeaderWrapper>
         <Card bordered={false}>
           <div className={styles.tableList}>
@@ -638,11 +744,7 @@ class Role extends PureComponent {
             />
           </div>
         </Card>
-        <CreateRoleForm
-          {...parentMethods}
-          modalVisible={modalVisible}
-          roleTypes={roleTypes}
-        />
+        <CreateRoleForm {...parentMethods} modalVisible={modalVisible} roleTypes={roleTypes} />
         <UpdateRoleForm
           {...updateMethods}
           updateModalVisible={updateModalVisible}
@@ -654,6 +756,12 @@ class Role extends PureComponent {
           roleUserModalVisible={roleUserModalVisible}
           roleRecord={roleRecord}
           users={users}
+        />
+        <SetRoleResourceForm
+          {...setRoleMenuMethods}
+          roleMenuModalVisible={roleMenuModalVisible}
+          roleRecord={roleRecord}
+          menus={menus}
         />
       </PageHeaderWrapper>
     );

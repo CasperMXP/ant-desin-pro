@@ -6,6 +6,7 @@ import {
   queryMenu,
   addMenu,
   updateMenuOrButtons,
+  queryAllLeafMenu,
 } from '@/services/menu';
 
 /**
@@ -23,6 +24,7 @@ export default {
       pagination: {},
     },
     buttons: [],
+    menus: [],
   },
   /**
    * 处理异步操作和业务逻辑，不直接修改state,由action触发，可以触发action,可以和服务器交互，可以获取全局的state
@@ -94,6 +96,13 @@ export default {
         payload: response,
       });
     },
+    *fetchAllLeafMenu(_, { call, put }) {
+      const response = yield call(queryAllLeafMenu);
+      yield put({
+        type: 'saveAllLeafMenu',
+        payload: response,
+      });
+    },
   },
   /**
    * reducers 处理同步操作，唯一可以修改state的地方，由action触发
@@ -121,6 +130,12 @@ export default {
       return {
         ...state,
         data: action.payload.data,
+      };
+    },
+    saveAllLeafMenu(state, action) {
+      return {
+        ...state,
+        menus: action.payload.data,
       };
     },
   },

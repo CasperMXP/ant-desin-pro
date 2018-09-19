@@ -51,3 +51,7 @@ export async function updateMenuOrButtons(params) {
     },
   });
 }
+
+export async function queryAllLeafMenu() {
+  return requestWithToken('/api/menus/leaf');
+}

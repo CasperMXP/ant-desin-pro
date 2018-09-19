@@ -1,7 +1,6 @@
-import {addRole, queryRole, queryRoleType, setUsers, updateRole} from '@/services/role';
+import { addRole, queryRole, queryRoleType, setUsers, updateRole, setMenus } from '@/services/role';
 
 export default {
-
   namespace: 'role',
 
   state: {
@@ -9,7 +8,7 @@ export default {
       list: [],
       pagination: {},
     },
-    roleTypes:[],
+    roleTypes: [],
   },
 
   effects: {
@@ -20,15 +19,15 @@ export default {
         payload: response,
       });
     },
-    *fetchRoleType(_,{ call, put }) {
+    *fetchRoleType(_, { call, put }) {
       const response = yield call(queryRoleType);
       yield put({
         type: 'saveRoleType',
         payload: response,
       });
     },
-    *add({payload},{ call, put }) {
-      yield call(addRole,payload.desc);
+    *add({ payload }, { call, put }) {
+      yield call(addRole, payload.desc);
       /**
        * 新增后自动刷新表格
        */
@@ -60,7 +59,17 @@ export default {
         payload: response,
       });
     },
-
+    *setMenus({ payload }, { call, put }) {
+      yield call(setMenus, payload.desc);
+      /**
+       * 更新成功后刷新表格
+       */
+      const response = yield call(queryRole, payload);
+      yield put({
+        type: 'save',
+        payload: response,
+      });
+    },
   },
 
   reducers: {
@@ -75,6 +84,6 @@ export default {
         ...state,
         roleTypes: action.payload.data,
       };
-    }
+    },
   },
 };

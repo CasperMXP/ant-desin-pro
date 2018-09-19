@@ -157,7 +157,7 @@ const UpdateMenuForm = Form.create()(props => {
       <FormItem {...formItemLayout} label="父菜单">
         {form.getFieldDecorator('pid', {
           initialValue: editMenuRecord.pid,
-          rules: [{ required: true, message: '请选择一个组织!' }],
+          rules: [{ required: true, message: '请选择!' }],
         })(
           <TreeSelect
             allowClear
@@ -616,11 +616,7 @@ class Menu extends PureComponent {
                 />
               </div>
             </Card>
-            <CreateMenuForm
-              {...parentMethods}
-              modalVisible={modalVisible}
-              orgTree={treeData}
-            />
+            <CreateMenuForm {...parentMethods} modalVisible={modalVisible} orgTree={treeData} />
             <UpdateMenuForm
               {...updateMethods}
               editMenuRecord={editMenuRecord}

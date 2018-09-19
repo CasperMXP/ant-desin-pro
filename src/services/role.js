@@ -1,4 +1,4 @@
-import {requestWithToken} from '@/utils/request';
+import { requestWithToken } from '@/utils/request';
 
 export async function queryRole(params) {
   return requestWithToken('/api/roles', {
@@ -36,6 +36,16 @@ export async function updateRole(params) {
 
 export async function setUsers(params) {
   return requestWithToken('/api/role/users', {
+    method: 'POST',
+    body: {
+      ...params,
+      method: 'POST',
+    },
+  });
+}
+
+export async function setMenus(params) {
+  return requestWithToken('/api/role/menus', {
     method: 'POST',
     body: {
       ...params,
