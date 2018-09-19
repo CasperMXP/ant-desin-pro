@@ -1,4 +1,4 @@
-import {queryRole,queryRoleType,addRole,updateRole} from '@/services/role';
+import {addRole, queryRole, queryRoleType, setUsers, updateRole} from '@/services/role';
 
 export default {
 
@@ -40,6 +40,17 @@ export default {
     },
     *update({ payload }, { call, put }) {
       yield call(updateRole, payload.desc);
+      /**
+       * 更新成功后刷新表格
+       */
+      const response = yield call(queryRole, payload);
+      yield put({
+        type: 'save',
+        payload: response,
+      });
+    },
+    *setUsers({ payload }, { call, put }) {
+      yield call(setUsers, payload.desc);
       /**
        * 更新成功后刷新表格
        */

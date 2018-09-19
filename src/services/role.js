@@ -33,3 +33,13 @@ export async function updateRole(params) {
     },
   });
 }
+
+export async function setUsers(params) {
+  return requestWithToken('/api/role/users', {
+    method: 'POST',
+    body: {
+      ...params,
+      method: 'POST',
+    },
+  });
+}

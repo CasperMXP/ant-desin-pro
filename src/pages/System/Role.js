@@ -161,10 +161,7 @@ const SetRoleUserForm = Form.create()(props => {
     roleUserModalVisible,
     roleRecord,
     handleRoleUserModalVisible,
-    mockData,
-    targetKeys,
-    filterOption,
-    handleChange,
+    users,
   } = props;
 
   const okHandle = () => {
@@ -175,10 +172,14 @@ const SetRoleUserForm = Form.create()(props => {
     });
   };
 
+  const changeTransfer = (targetKeys) => {
+    roleRecord.loginNames = [...targetKeys]
+  }
+
   return (
     <Modal
-      destroyOnClose
       centered
+      closable={false}
       maskClosable={false}
       width={600}
       title="设置角色关联人员"
@@ -187,26 +188,36 @@ const SetRoleUserForm = Form.create()(props => {
       onCancel={() => handleRoleUserModalVisible()}
     >
       <FormItem
-        label="角色名称">
+        {...formItemLayout}
+        label="角色id"
+      >
+        {form.getFieldDecorator('roleId', {
+          initialValue:roleRecord.roleId,
+        })(<Input disabled />)}
+      </FormItem>
+
+      <FormItem
+        {...formItemLayout}
+        label="角色名称"
+      >
         {form.getFieldDecorator('roleName', {
           initialValue:roleRecord.roleName,
         })(<Input disabled />)}
       </FormItem>
       <FormItem>
-        {form.getFieldDecorator('userIds', {
+        {form.getFieldDecorator('loginNames', {
         })(
           <Transfer
-            dataSource={mockData}
+            dataSource={users}
             showSearch
-            titles={['已选择人员', '可选择人员']}
+            titles={['可关联人员', '已关联人员']}
             listStyle={{
               width: 250,
               height: 300,
             }}
-            filterOption={filterOption}
-            targetKeys={targetKeys}
-            onChange={handleChange}
-            render={item => item.title}
+            targetKeys={roleRecord.loginNames}
+            render={item => item.title + '-' + item.key}
+            onChange={changeTransfer}
           />
         )}
       </FormItem>
@@ -216,10 +227,11 @@ const SetRoleUserForm = Form.create()(props => {
 });
 
 /* eslint react/no-multi-comp:0 */
-@connect(({ role, loading }) => ({
+@connect(({ role, loading, user }) => ({
   role,
   loading: loading.models.role,
   roleTypes: role.roleTypes,
+  users: user.users
 }))
 @Form.create()
 class Role extends PureComponent {
@@ -231,8 +243,6 @@ class Role extends PureComponent {
     formValues: {},
     editRoleRecord: {},
     roleRecord: {},
-    mockData: [],
-    targetKeys: [],
   };
 
   /**
@@ -302,34 +312,11 @@ class Role extends PureComponent {
     dispatch({
       type: 'role/fetchRoleType',
     });
-    this.getMock();
+    dispatch({
+      type: 'user/fetchAllUsers'
+    });
   }
 
-  getMock = () => {
-    const targetKeys = [];
-    const mockData = [];
-    for (let i = 0; i < 20; i++) {
-      const data = {
-        key: i.toString(),
-        title: `content${i + 1}`,
-        description: `description of content${i + 1}`,
-        chosen: Math.random() * 2 > 1,
-      };
-      if (data.chosen) {
-        targetKeys.push(data.key);
-      }
-      mockData.push(data);
-    }
-    this.setState({ mockData, targetKeys });
-  }
-
-  filterOption = (inputValue, option) => {
-    return option.description.indexOf(inputValue) > -1;
-  }
-
-  handleChange = (targetKeys) => {
-    this.setState({ targetKeys });
-  }
 
   /**
    * 动态渲染角色类型下拉列表
@@ -483,6 +470,15 @@ class Role extends PureComponent {
       roleUserModalVisible: !!flag,
       roleRecord: record || {},
     });
+    const { dispatch } = this.props;
+    const pageInfo = {
+      pageSize: 10,
+      current: 1,
+    };
+    dispatch({
+      type: 'role/fetch',
+      payload: pageInfo,
+    });
   };
 
   /**
@@ -576,6 +572,7 @@ class Role extends PureComponent {
       role: { data },
       loading,
       roleTypes,
+      users,
     } = this.props;
 
     const {
@@ -585,8 +582,6 @@ class Role extends PureComponent {
       editRoleRecord,
       roleRecord,
       roleUserModalVisible,
-      mockData,
-      targetKeys,
     } = this.state;
 
     const parentMethods = {
@@ -604,8 +599,6 @@ class Role extends PureComponent {
     const setRoleUserMethods = {
       handleRoleUserModalVisible: this.handleRoleUserUpdateModalVisible,
       handleSetRoleUser: this.handleSetRoleUser,
-      filterOption:this.filterOption,
-      handleChange: this.handleChange,
     };
 
     return (
@@ -660,8 +653,7 @@ class Role extends PureComponent {
           {...setRoleUserMethods}
           roleUserModalVisible={roleUserModalVisible}
           roleRecord={roleRecord}
-          mockData={mockData}
-          targetKeys={targetKeys}
+          users={users}
         />
       </PageHeaderWrapper>
     );

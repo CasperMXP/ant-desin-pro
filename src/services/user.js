@@ -64,3 +64,8 @@ export async function resetPassword(params) {
   });
 }
 
+export async function queryAllUsers() {
+  return requestWithToken('/api/users');
+}
+
+

@@ -1,4 +1,13 @@
-import {addUser, queryCurrent, queryUsers, removeUser, resetPassword, updateUser, validUser} from '@/services/user';
+import {
+  addUser,
+  queryAllUsers,
+  queryCurrent,
+  queryUsers,
+  removeUser,
+  resetPassword,
+  updateUser,
+  validUser
+} from '@/services/user';
 
 export default {
 
@@ -10,6 +19,7 @@ export default {
       list: [],
       pagination: {},
     },
+    users: [],
   },
 
   effects: {
@@ -77,8 +87,13 @@ export default {
       yield call(resetPassword, payload);
       if (callback) callback();
     },
-
-
+    *fetchAllUsers(_, { call, put }) {
+      const response = yield call(queryAllUsers);
+      yield put({
+        type: 'saveUsers',
+        payload: response,
+      });
+    },
   },
 
   reducers: {
@@ -92,6 +107,12 @@ export default {
       return {
         ...state,
         data: action.payload.data,
+      };
+    },
+    saveUsers(state, action) {
+      return {
+        ...state,
+        users: action.payload.data,
       };
     },
   },
