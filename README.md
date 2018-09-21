@@ -712,6 +712,11 @@ $ git clone https://github.com/ant-design/ant-design-pro.git --depth=1
 执行git fetch --unshallow origin后
 重新git push -u github origin即可
 
-2018年09月14日13:40:49
+2018年09月21日14:14:47
 
+参数管理->额度管理->额度类型定义
+
+参数管理->产品管理-产品管理
+
+预计下周四 原型讨论和设计联系浩庭，一起设计
 

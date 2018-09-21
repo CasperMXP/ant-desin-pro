@@ -1,12 +1,13 @@
 import {
+  addMenu,
+  queryAllLeafMenu,
+  queryMenu,
+  queryMenuChildren,
   queryMenusByLoginName,
   queryTreeData,
-  queryMenuChildren,
   removeMenuByMenuId,
-  queryMenu,
-  addMenu,
   updateMenuOrButtons,
-  queryAllLeafMenu,
+  queryMenuButtonTree,
 } from '@/services/menu';
 
 /**
@@ -25,6 +26,7 @@ export default {
     },
     buttons: [],
     menus: [],
+    menuButtonTree: [],
   },
   /**
    * 处理异步操作和业务逻辑，不直接修改state,由action触发，可以触发action,可以和服务器交互，可以获取全局的state
@@ -103,6 +105,13 @@ export default {
         payload: response,
       });
     },
+    *fetchMenuButtonTree(_, { call, put }) {
+      const response = yield call(queryMenuButtonTree);
+      yield put({
+        type: 'saveMenuButtonTree',
+        payload: response,
+      });
+    },
   },
   /**
    * reducers 处理同步操作，唯一可以修改state的地方，由action触发
@@ -136,6 +145,12 @@ export default {
       return {
         ...state,
         menus: action.payload.data,
+      };
+    },
+    saveMenuButtonTree(state, action) {
+      return {
+        ...state,
+        menuButtonTree: action.payload.data,
       };
     },
   },

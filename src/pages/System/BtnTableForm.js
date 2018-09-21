@@ -10,7 +10,6 @@ class BtnTableForm extends PureComponent {
 
   constructor(props) {
     super(props);
-
     this.state = {
       data: props.value,
       loading: false,

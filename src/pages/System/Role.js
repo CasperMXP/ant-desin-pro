@@ -14,17 +14,16 @@ import {
   Select,
   Tooltip,
   Transfer,
-  Tree,
 } from 'antd';
 import StandardTable from '@/components/StandardTable';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import styles from '../List/TableList.less';
+import MenuButtonTree from './MenuButtonTree';
 
 const validStatusMap = ['0', '1'];
 const validStatus = ['无效', '有效'];
 
 const FormItem = Form.Item;
-const { TreeNode } = Tree;
 const { Option } = Select;
 const formItemLayout = {
   labelCol: {
@@ -154,39 +153,36 @@ const UpdateRoleForm = Form.create()(props => {
 });
 
 /**
- * 角色与菜单资源关联模态框
+ * 角色与资源（菜单按钮）关联模态框
  */
 const SetRoleResourceForm = Form.create()(props => {
   const {
     form,
     roleRecord,
-    roleMenuModalVisible,
-    handleSetRoleMenu,
-    handleRoleMenuModalVisible,
-    menus,
+    roleResourceModalVisible,
+    handleSetRoleResource,
+    handleRoleResourceModalVisible,
+    menuButtonTree,
   } = props;
 
   const okHandle = () => {
     form.validateFields((err, fieldsValue) => {
       if (err) return;
       form.resetFields();
-      handleSetRoleMenu(fieldsValue);
+      handleSetRoleResource(fieldsValue);
     });
   };
 
-  const changeTransfer = targetKeys => {
-    roleRecord.menuIds = [...targetKeys];
-  };
   return (
     <Modal
       centered
       closable={false}
       maskClosable={false}
-      width={800}
+      width={600}
       title="设置角色关联菜单"
-      visible={roleMenuModalVisible}
+      visible={roleResourceModalVisible}
       onOk={okHandle}
-      onCancel={() => handleRoleMenuModalVisible()}
+      onCancel={() => handleRoleResourceModalVisible()}
     >
       <FormItem {...formItemLayout} label="角色id">
         {form.getFieldDecorator('roleId', {
@@ -198,21 +194,10 @@ const SetRoleResourceForm = Form.create()(props => {
           initialValue: roleRecord.roleName,
         })(<Input disabled />)}
       </FormItem>
-      <FormItem {...formItemLayout}>
-        {form.getFieldDecorator('menuIds', {})(
-          <Transfer
-            dataSource={menus}
-            showSearch
-            titles={['可关联菜单', '已关联菜单']}
-            listStyle={{
-              width: 270,
-              height: 400,
-            }}
-            targetKeys={roleRecord.menuIds}
-            render={item => item.title}
-            onChange={changeTransfer}
-          />
-        )}
+      <FormItem {...formItemLayout} label="菜单按钮树">
+        {form.getFieldDecorator('menusButtonsIds', {
+          initialValue: roleRecord.menusButtonsIds,
+        })(<MenuButtonTree menuButtonTree={menuButtonTree} />)}
       </FormItem>
     </Modal>
   );
@@ -297,6 +282,7 @@ const SetRoleUserForm = Form.create()(props => {
   roleTypes: role.roleTypes,
   users: user.users,
   menus: menu.menus,
+  menuButtonTree: menu.menuButtonTree,
 }))
 @Form.create()
 class Role extends PureComponent {
@@ -304,7 +290,7 @@ class Role extends PureComponent {
     modalVisible: false,
     updateModalVisible: false,
     roleUserModalVisible: false,
-    roleMenuModalVisible: false,
+    roleResourceModalVisible: false,
     selectedRows: [],
     formValues: {},
     editRoleRecord: {},
@@ -353,8 +339,8 @@ class Role extends PureComponent {
       title: '操作',
       render: (text, record) => (
         <Fragment>
-          <a onClick={() => this.handleRoleMenuUpdateModalVisible(true, record)}>
-            设置角色关联菜单
+          <a onClick={() => this.handleRoleResourceUpdateModalVisible(true, record)}>
+            设置角色关联资源
           </a>
           <Divider type="vertical" />
           <a onClick={() => this.handleRoleUserUpdateModalVisible(true, record)}>
@@ -388,6 +374,9 @@ class Role extends PureComponent {
     dispatch({
       type: 'menu/fetchAllLeafMenu',
     });
+    dispatch({
+      type: 'menu/fetchMenuButtonTree',
+    });
   }
 
   /**
@@ -396,7 +385,11 @@ class Role extends PureComponent {
    * @returns {*}
    */
   renderSelectOptions = data =>
-    data.map(item => <Option value={item.roleTypeId}>{item.roleTypeName}</Option>);
+    data.map(item => (
+      <Option key={item.roleTypeId} value={item.roleTypeId}>
+        {item.roleTypeName}
+      </Option>
+    ));
 
   /**
    * 处理表格上分页，条件过滤等事件
@@ -551,9 +544,9 @@ class Role extends PureComponent {
     });
   };
 
-  handleRoleMenuUpdateModalVisible = (flag, record) => {
+  handleRoleResourceUpdateModalVisible = (flag, record) => {
     this.setState({
-      roleMenuModalVisible: !!flag,
+      roleResourceModalVisible: !!flag,
       roleRecord: record || {},
     });
     const { dispatch } = this.props;
@@ -616,18 +609,33 @@ class Role extends PureComponent {
   };
 
   /**
-   * 给角色设置菜单
+   * 给角色设置资源（菜单和按钮）
    * @param fields
    */
-  handleSetRoleMenu = fields => {
+  handleSetRoleResource = fields => {
     const { dispatch } = this.props;
     dispatch({
-      type: 'role/setMenus',
+      type: 'role/setResources',
       payload: {
         desc: fields,
       },
     });
-    this.handleRoleMenuUpdateModalVisible();
+    this.handleRoleResourceUpdateModalVisible();
+  };
+
+  /**
+   * 给角色设置按钮权限
+   * @param fields
+   */
+  handleSetRoleButton = fields => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'role/setButtons',
+      payload: {
+        desc: fields,
+      },
+    });
+    this.handleRoleButtonUpdateModalVisible();
   };
 
   renderSimpleForm() {
@@ -673,6 +681,7 @@ class Role extends PureComponent {
       roleTypes,
       users,
       menus,
+      menuButtonTree,
     } = this.props;
 
     const {
@@ -682,7 +691,7 @@ class Role extends PureComponent {
       editRoleRecord,
       roleRecord,
       roleUserModalVisible,
-      roleMenuModalVisible,
+      roleResourceModalVisible,
     } = this.state;
 
     const parentMethods = {
@@ -702,10 +711,9 @@ class Role extends PureComponent {
       handleSetRoleUser: this.handleSetRoleUser,
     };
 
-    const setRoleMenuMethods = {
-      handleRoleMenuModalVisible: this.handleRoleMenuUpdateModalVisible,
-      handleSetRoleMenu: this.handleSetRoleMenu,
-      renderTreeNodes: this.renderTreeNodes,
+    const setRoleResourceMethods = {
+      handleRoleResourceModalVisible: this.handleRoleResourceUpdateModalVisible,
+      handleSetRoleResource: this.handleSetRoleResource,
     };
 
     return (
@@ -758,10 +766,11 @@ class Role extends PureComponent {
           users={users}
         />
         <SetRoleResourceForm
-          {...setRoleMenuMethods}
-          roleMenuModalVisible={roleMenuModalVisible}
+          {...setRoleResourceMethods}
+          roleResourceModalVisible={roleResourceModalVisible}
           roleRecord={roleRecord}
           menus={menus}
+          menuButtonTree={menuButtonTree}
         />
       </PageHeaderWrapper>
     );

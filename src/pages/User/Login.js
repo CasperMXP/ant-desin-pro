@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import {  Alert } from 'antd';
+import { Alert } from 'antd';
 import Login from '@/components/Login';
 import styles from './Login.less';
 
@@ -72,7 +72,7 @@ class LoginPage extends Component {
               login.type === 'account' &&
               !submitting &&
               this.renderMessage('账户或密码错误')}
-            <UserName name="loginName" defaultValue="admin" />
+            <UserName name="loginName" defaultValue="maxingping" />
             <Password
               name="password"
               defaultValue="1"
@@ -83,7 +83,8 @@ class LoginPage extends Component {
           <Tab key="mobile" tab="手机号登录">
             {login.status === 'error' &&
               login.type === 'mobile' &&
-              !submitting && this.renderMessage('验证码错误')}
+              !submitting &&
+              this.renderMessage('验证码错误')}
             <Mobile name="mobile" />
             <Captcha name="captcha" countDown={120} onGetCaptcha={this.onGetCaptcha} />
           </Tab>
