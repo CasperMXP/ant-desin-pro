@@ -1,24 +1,10 @@
-import React, { Fragment, PureComponent } from 'react';
-import { connect } from 'dva';
-import {
-  Badge,
-  Button,
-  Card,
-  Col,
-  Divider,
-  Form,
-  Input,
-  message,
-  Modal,
-  Row,
-  Tooltip,
-  Tree,
-  TreeSelect,
-} from 'antd';
-import StandardTable from '@/components/StandardTable';
+import React, {Fragment, PureComponent} from 'react';
+import {connect} from 'dva';
+import {Badge, Button, Card, Col, Divider, Form, Input, message, Modal, Row, Tooltip, Tree, TreeSelect,} from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import moment from 'moment';
 import styles from '../List/TableList.less';
+import CustomTable from "../../components/CustomTable";
 
 const statusMap = ['1', '0'];
 const status = ['无效', '有效'];
@@ -157,6 +143,7 @@ const UpdateOrgForm = Form.create()(props => {
     </Modal>
   );
 });
+
 /* eslint react/no-multi-comp:0 */
 @connect(({ org, loading }) => ({
   org,
@@ -168,7 +155,6 @@ class Org extends PureComponent {
   state = {
     modalVisible: false,
     updateModalVisible: false,
-    selectedRows: [],
     formValues: {},
     editOrgRecord: {},
   };
@@ -320,7 +306,6 @@ class Org extends PureComponent {
     if (sorter.field) {
       params.sorter = `${sorter.field}_${sorter.order}`;
     }
-
     dispatch({
       type: 'org/fetch',
       payload: params,
@@ -336,34 +321,6 @@ class Org extends PureComponent {
     dispatch({
       type: 'org/fetch',
       payload: {},
-    });
-  };
-
-  /**
-   * ToDo 未实现
-   */
-  handleExportExcelClick = () => {
-    const { dispatch } = this.props;
-    const { selectedRows } = this.state;
-
-    if (selectedRows) {
-      dispatch({
-        type: 'org/export',
-        payload: {
-          key: selectedRows.map(row => row.key),
-        },
-        callback: () => {
-          this.setState({
-            selectedRows: [],
-          });
-        },
-      });
-    }
-  };
-
-  handleSelectRows = rows => {
-    this.setState({
-      selectedRows: rows,
     });
   };
 
@@ -520,7 +477,8 @@ class Org extends PureComponent {
       orgTree,
       loading,
     } = this.props;
-    const { selectedRows, modalVisible, updateModalVisible, editOrgRecord } = this.state;
+
+    const {modalVisible, updateModalVisible, editOrgRecord } = this.state;
 
     const parentMethods = {
       handleAdd: this.handleAdd,
@@ -548,32 +506,20 @@ class Org extends PureComponent {
                   <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
                     新建
                   </Button>
-                  <Button
-                    icon="import"
-                    type="primary"
-                    onClick={() => this.handleModalVisible(true)}
-                  >
-                    Excel导入
-                  </Button>
-                  {selectedRows.length > 0 && (
-                    <span>
-                      <Button icon="export" onClick={this.handleExportExcelClick}>
-                        导出Excel
-                      </Button>
-                    </span>
-                  )}
                 </div>
-                <StandardTable
-                  selectedRows={selectedRows}
+                <CustomTable
                   loading={loading}
                   data={data}
                   columns={this.columns}
-                  onSelectRow={this.handleSelectRows}
                   onChange={this.handleStandardTableChange}
                 />
               </div>
             </Card>
-            <CreateOrgForm {...parentMethods} modalVisible={modalVisible} orgTree={orgTree} />
+            <CreateOrgForm
+              {...parentMethods}
+              modalVisible={modalVisible}
+              orgTree={orgTree}
+            />
             <UpdateOrgForm
               {...updateMethods}
               editOrgRecord={editOrgRecord}
